@@ -44,6 +44,7 @@ export const register = async (data: RegisterData) => {
 };
 
 // ============ 登录 ============
+// ============ 登录 ============
 export const login = async (data: LoginData) => {
   if (USE_MOCK) {
     await mockDelay(500);
@@ -53,11 +54,14 @@ export const login = async (data: LoginData) => {
     }
     const token = `mock-jwt-${Date.now()}-${user.id}`;
     mockDb.tokens[token] = user.id;
+    // 判断是否为管理员（admin 账号自动设为管理员）
+    const role = user.username === 'admin' ? 'admin' : 'user';
     return mockSuccess({
       token,
       userId: user.id,
       username: user.username,
       email: user.email,
+      role,  // 新增 role 字段
     });
   }
   return apiClient.post('/api/auth/login', data);

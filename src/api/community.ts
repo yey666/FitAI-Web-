@@ -169,3 +169,11 @@ export const addComment = async (checkinId: number, content: string) => {
   }
   return apiClient.post(`/api/community/comment/${checkinId}`, { content });
 };
+// 删除打卡（管理员专用）
+export const deleteCheckin = async (checkinId: number) => {
+  if (USE_MOCK) {
+    await mockDelay(300);
+    return mockSuccess(null);
+  }
+  return apiClient.delete(`/api/admin/checkins/${checkinId}`);
+};

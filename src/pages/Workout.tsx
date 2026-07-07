@@ -8,6 +8,7 @@ import { getWorkoutList, saveWorkout, deleteWorkout, getWorkoutCalendar, updateW
 import { getExercises } from '@/api/exercises';
 import ReactECharts from 'echarts-for-react';
 import { motion } from 'framer-motion';
+import { shouldShowAdminActions } from '@/utils/auth';
 
 // ===== 图标 =====
 const Icons = {
@@ -422,12 +423,16 @@ const Workout = () => {
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <span className="text-xs text-slate-300 font-light">{record.date}</span>
-                    <button onClick={() => handleEdit(record)} className="p-1 rounded hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600">
-                      {Icons.edit}
-                    </button>
-                    <button onClick={() => handleDelete(record.id)} className="p-1 rounded hover:bg-slate-100 transition-colors text-slate-400 hover:text-red-500">
-                      {Icons.delete}
-                    </button>
+                    {shouldShowAdminActions() && (
+  <>
+    <button onClick={() => handleEdit(record)} className="p-1 rounded hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600">
+      {Icons.edit}
+    </button>
+    <button onClick={() => handleDelete(record.id)} className="p-1 rounded hover:bg-slate-100 transition-colors text-slate-400 hover:text-red-500">
+      {Icons.delete}
+    </button>
+  </>
+)}
                   </div>
                 </motion.div>
               ))

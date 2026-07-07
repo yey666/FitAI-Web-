@@ -4,8 +4,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { getFeed, createCheckin, toggleLike, addComment } from '@/api/community';
+import { getFeed, createCheckin, toggleLike, addComment, deleteCheckin } from '@/api/community';
 import { motion } from 'framer-motion';
+import { shouldShowAdminActions } from '@/utils/auth';
 
 // ===== 图标 =====
 const Icons = {
@@ -65,6 +66,12 @@ const Icons = {
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M18 6L6 18" />
       <path d="M6 6l12 12" />
+    </svg>
+  ),
+  delete: (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 6h18" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
     </svg>
   ),
 };
@@ -144,6 +151,20 @@ const Community = () => {
     fetchData();
     const updated = feed.find(f => f.id === checkinId);
     if (updated) setSelectedCheckin(updated);
+  };
+
+  const handleDeleteCheckin = async (checkinId: number) => {
+    if (!confirm('确定要删除该打卡吗？此操作不可撤销。')) return;
+    try {
+      await deleteCheckin(checkinId);
+      fetchData();
+      if (detailOpen && selectedCheckin?.id === checkinId) {
+        setDetailOpen(false);
+        setSelectedCheckin(null);
+      }
+    } catch (error) {
+      console.error('删除打卡失败:', error);
+    }
   };
 
   const openDetail = (checkin: Checkin) => {
@@ -298,6 +319,18 @@ const Community = () => {
                         {Icons.comment}
                         <span>{item.commentCount || 0}</span>
                       </button>
+                      {shouldShowAdminActions() && (
+                        <button
+                          className="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-600 transition-colors ml-auto"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteCheckin(item.id);
+                          }}
+                        >
+                          {Icons.delete}
+                          删除
+                        </button>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -336,13 +369,24 @@ const Community = () => {
                     </div>
                   </div>
                   <p className="text-sm text-slate-600 font-light leading-relaxed mb-4">{selectedCheckin.content}</p>
-                  <button
-                    className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 transition-colors mb-4"
-                    onClick={() => handleLike(selectedCheckin.id)}
-                  >
-                    {selectedCheckin.isLiked ? Icons.heartFilled : Icons.heart}
-                    <span className={selectedCheckin.isLiked ? 'text-red-500' : ''}>{selectedCheckin.likes}</span>
-                  </button>
+                  <div className="flex items-center gap-4 mb-4">
+                    <button
+                      className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
+                      onClick={() => handleLike(selectedCheckin.id)}
+                    >
+                      {selectedCheckin.isLiked ? Icons.heartFilled : Icons.heart}
+                      <span className={selectedCheckin.isLiked ? 'text-red-500' : ''}>{selectedCheckin.likes}</span>
+                    </button>
+                    {shouldShowAdminActions() && (
+                      <button
+                        className="flex items-center gap-1.5 text-sm text-red-400 hover:text-red-600 transition-colors"
+                        onClick={() => handleDeleteCheckin(selectedCheckin.id)}
+                      >
+                        {Icons.delete}
+                        删除
+                      </button>
+                    )}
+                  </div>
                   <div className="border-t border-slate-200/50 pt-4 mb-4 max-h-48 overflow-y-auto">
                     <p className="text-xs text-slate-400 font-light mb-3">评论 · {selectedCheckin.commentCount || 0}</p>
                     {selectedCheckin.comments && selectedCheckin.comments.length > 0 ? (

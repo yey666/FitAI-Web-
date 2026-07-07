@@ -3,6 +3,7 @@ import type { AxiosResponse } from 'axios';
 
 // ============ Mock 开关 ============
 export const USE_MOCK = true;  // true → Mock 模式，false → 真实接口
+
 // ====================================
 
 const REAL_BASE_URL = USE_MOCK ? '' : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080');

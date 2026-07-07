@@ -39,49 +39,43 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+  e.preventDefault();
+  setError('');
+  setLoading(true);
 
-    try {
-      const res = await loginApi({ username, password });
-      console.log('登录返回:', res);
-      
-      let token, userId, userName, userEmail;
-      
-      if (res.data && res.data.token) {
-        token = res.data.token;
-        userId = res.data.userId;
-        userName = res.data.username;
-        userEmail = res.data.email;
-      } else if (res.token) {
-        token = res.token;
-        userId = res.userId;
-        userName = res.username;
-        userEmail = res.email;
-      } else {
-        console.error('未知格式:', res);
-        setError('登录数据格式异常');
-        setLoading(false);
-        return;
-      }
-      
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify({
-        id: userId,
-        username: userName,
-        email: userEmail
-      }));
-      
-      login(token, { id: userId, username: userName, email: userEmail });
-      navigate('/');
-    } catch (err: any) {
-      console.error('登录失败:', err);
-      setError(err?.message || '登录失败，请检查用户名和密码');
-    } finally {
+  try {
+    const res = await loginApi({ username, password });
+    console.log('登录返回:', res);
+
+    // 兼容两种返回格式：直接返回数据 或 包装在 data 中
+    const data = res?.data || res;
+    
+    if (!data.token) {
+      console.error('未知格式:', res);
+      setError('登录数据格式异常');
       setLoading(false);
+      return;
     }
-  };
+
+    const user = {
+      id: data.userId,
+      username: data.username,
+      email: data.email,
+      role: data.role || 'user',  // ✅ 关键：读取 role
+    };
+
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(user));
+
+    login(data.token, user);
+    navigate('/');
+  } catch (err: any) {
+    console.error('登录失败:', err);
+    setError(err?.message || '登录失败，请检查用户名和密码');
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-slate-50/30 flex items-center justify-center px-4">
