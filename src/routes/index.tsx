@@ -17,6 +17,8 @@ import AdminUsers from '../pages/Admin/Users';
 import AdminCheckins from '../pages/Admin/Checkins';
 import AdminExercises from '../pages/Admin/Exercises';
 import { useAuthStore } from '../store/useAuthStore';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // ===== 普通用户路由守卫 =====
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -33,10 +35,26 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-  if (user?.role !== 'admin' || viewMode !== 'admin') {
+  if (user?.role?.toLowerCase() !== 'admin' || viewMode !== 'admin') {
     return <Navigate to="/" replace />;
   }
   return children;
+};
+
+// ===== 根路径组件 =====
+const RootRoute = () => {
+  const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
+  const viewMode = useAuthStore((state) => state.viewMode);
+  const isAdminUser = user?.role?.toLowerCase() === 'admin' && viewMode === 'admin';
+
+  useEffect(() => {
+    if (isAdminUser) {
+      navigate('/admin', { replace: true });
+    }
+  }, [isAdminUser, navigate]);
+
+  return <Home />;
 };
 
 export const router = createBrowserRouter([
@@ -48,7 +66,7 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { index: true, element: <Home /> },
+      { index: true, element: <RootRoute /> },
       { path: 'exercises', element: <Exercises /> },
       { path: 'workout', element: <Workout /> },
       { path: 'correct', element: <Correct /> },

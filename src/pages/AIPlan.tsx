@@ -161,9 +161,9 @@ const AIPlan = () => {
   const [expandedHistoryId, setExpandedHistoryId] = useState<number | null>(null);
 
   const goalOptions = ['增肌', '减脂', '塑形'];
-  const venueOptions = ['健身房', '宿舍', '户外'];
-  const levelOptions = ['初级', '中级', '高级'];
-  const frequencyOptions = [1, 2, 3, 4, 5, 6, 7];
+  const venueOptions = ['健身房', '居家', '户外'];
+  const levelOptions = ['新手', '初级', '中级', '高级'];
+  const frequencyOptions = [2, 3, 4, 5, 6];
 
   useEffect(() => {
     getPlanHistory().then(setHistory).catch(() => {});
@@ -176,13 +176,16 @@ const AIPlan = () => {
     setPlan(null);
     setSaveSuccess(false);
     setIsSaved(false);
+    const params = {
+      goal: form.goal,
+      venue: form.venue,
+      experience: form.level,
+      frequency: form.frequency,
+    };
+    console.log('[生成计划] 请求参数:', params);
     try {
-      const data = await generatePlan({
-        goal: form.goal,
-        venue: form.venue,
-        experience: form.level,
-        frequency: form.frequency,
-      });
+      const data = await generatePlan(params);
+      console.log('[生成计划] 响应数据:', data);
       setPlan(data.content);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 2500);

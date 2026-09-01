@@ -105,7 +105,9 @@ export const getFeed = async (): Promise<Checkin[]> => {
     await mockDelay(400);
     return [...mockFeed];
   }
-  return apiClient.get('/api/community/feed');
+  const res = await apiClient.get('/api/community/feed');
+  // 后端返回的是 { records: [], total: 0, size: 10, current: 1, pages: 0 }
+  return res?.records || [];
 };
 
 // ===== 3. 个人打卡列表 =====

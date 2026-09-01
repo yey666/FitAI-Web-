@@ -44,8 +44,8 @@ export const register = async (data: RegisterData) => {
 };
 
 // ============ 登录 ============
-// ============ 登录 ============
 export const login = async (data: LoginData) => {
+    console.log('登录 API 被调用，USE_MOCK:', USE_MOCK);
   if (USE_MOCK) {
     await mockDelay(500);
     const user = mockDb.users.find((u) => u.username === data.username && u.password === data.password);

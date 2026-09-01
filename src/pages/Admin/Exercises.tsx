@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { getAdminExercises, createAdminExercise, updateAdminExercise, deleteAdminExercise } from '@/api/admin';
 
 interface Exercise {
   id: number;
@@ -9,7 +10,7 @@ interface Exercise {
   description: string;
   imageUrl: string;
   steps: string[];
-  tips: string[];
+  tips: string;
   commonMistakes: string[];
   status: 'published' | 'draft';
   createdAt: string;
@@ -40,89 +41,7 @@ const AdminExercises = () => {
   const bodyParts = ['胸', '背', '腿', '肩', '手臂', '核心'];
 
   useEffect(() => {
-    setTimeout(() => {
-      setExercises([
-        {
-          id: 1,
-          name: '深蹲',
-          bodyPart: '腿',
-          difficulty: 1,
-          description: '锻炼大腿、臀部和核心力量的基础动作',
-          imageUrl: '',
-          steps: ['站立，双脚与肩同宽', '杠铃置于肩部后侧', '下蹲至大腿与地面平行', '站起回到起始位置'],
-          tips: ['膝盖与脚尖方向一致', '背部保持挺直', '下蹲至大腿与地面平行'],
-          commonMistakes: ['膝盖内扣', '背部弯曲', '重心前移'],
-          status: 'published',
-          createdAt: '2026-06-01'
-        },
-        {
-          id: 2,
-          name: '卧推',
-          bodyPart: '胸',
-          difficulty: 2,
-          description: '锻炼胸大肌、三角肌和肱三头肌的核心动作',
-          imageUrl: '',
-          steps: ['仰卧在卧推凳上', '双手握住杠铃略比肩宽', '将杠铃下放至胸部', '推起杠铃至手臂伸直'],
-          tips: ['肩胛骨收紧', '杠铃落在乳头连线位置', '肘关节与身体成75度角'],
-          commonMistakes: ['肩部前送', '杠铃下落位置错误', '臀部抬起'],
-          status: 'published',
-          createdAt: '2026-06-15'
-        },
-        {
-          id: 3,
-          name: '硬拉',
-          bodyPart: '背',
-          difficulty: 3,
-          description: '锻炼全身后侧链的复合动作',
-          imageUrl: '',
-          steps: ['双脚与肩同宽站立', '弯腰握住杠铃', '核心收紧，背部挺直', '髋部发力将杠铃抬起'],
-          tips: ['背部保持中立位', '杠铃贴近小腿', '髋部发力驱动上升'],
-          commonMistakes: ['背部弓起', '用腰部发力', '杠铃远离身体'],
-          status: 'published',
-          createdAt: '2026-06-20'
-        },
-        {
-          id: 4,
-          name: '引体向上',
-          bodyPart: '背',
-          difficulty: 3,
-          description: '锻炼背部和手臂的经典动作',
-          imageUrl: '',
-          steps: ['双手握住单杠，略比肩宽', '身体自然悬挂', '背部发力将身体拉起', '下巴过杠后缓慢下放'],
-          tips: ['不要借力摆动', '控制下放速度', '保持核心收紧'],
-          commonMistakes: ['借力摆动', '下放过快', '肩胛骨未收紧'],
-          status: 'draft',
-          createdAt: '2026-06-25'
-        },
-        {
-          id: 5,
-          name: '保加利亚深蹲',
-          bodyPart: '腿',
-          difficulty: 3,
-          description: '单腿深蹲，提升下肢力量和稳定性',
-          imageUrl: '',
-          steps: ['后脚置于凳面上', '前脚向前迈出一步', '下蹲至前大腿与地面平行', '前脚发力站起'],
-          tips: ['保持躯干直立', '前膝不超过脚尖', '控制下蹲速度'],
-          commonMistakes: ['躯干前倾', '膝盖内扣', '重心偏移'],
-          status: 'published',
-          createdAt: '2026-06-28'
-        },
-        {
-          id: 6,
-          name: '哑铃飞鸟',
-          bodyPart: '胸',
-          difficulty: 2,
-          description: '锻炼胸肌中缝的经典动作',
-          imageUrl: '',
-          steps: ['仰卧在平凳上，双手持哑铃', '双臂伸直位于胸部上方', '缓慢向两侧打开手臂', '感受胸肌拉伸后收回'],
-          tips: ['肘关节微屈', '控制下落速度', '感受胸肌发力'],
-          commonMistakes: ['肘关节锁死', '重量过重导致借力', '下落过快'],
-          status: 'published',
-          createdAt: '2026-06-30'
-        },
-      ]);
-      setLoading(false);
-    }, 400);
+    fetchExercises();
   }, []);
 
   useEffect(() => {
@@ -132,6 +51,29 @@ const AdminExercises = () => {
     if (filterDiff !== 'all') result = result.filter(e => e.difficulty === filterDiff);
     setFiltered(result);
   }, [search, filterPart, filterDiff, exercises]);
+
+  const fetchExercises = async () => {
+    try {
+      const data = await getAdminExercises();
+      setExercises(data.map((e: any) => ({
+        id: e.id,
+        name: e.name,
+        bodyPart: e.bodyPart,
+        difficulty: e.difficulty as 1 | 2 | 3,
+        description: e.description || '',
+        imageUrl: e.imageUrl || '',
+        steps: e.steps || [],
+        tips: e.tips || '',
+        commonMistakes: e.commonMistakes || [],
+        status: e.status || (e.deleted ? 'draft' : 'published'),
+        createdAt: e.createdAt || '',
+      })));
+    } catch (error) {
+      console.error('获取动作列表失败:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const resetForm = () => {
     setFormData({
@@ -166,7 +108,7 @@ const AdminExercises = () => {
       description: item.description,
       imageUrl: item.imageUrl || '',
       steps: item.steps.join('\n'),
-      tips: item.tips.join('\n'),
+      tips: item.tips || '',
       commonMistakes: item.commonMistakes.join('\n'),
     });
     setShowForm(true);
@@ -205,7 +147,7 @@ const AdminExercises = () => {
     }
   };
 
-  const handleSubmit = (status: 'published' | 'draft') => {
+  const handleSubmit = async (status: 'published' | 'draft') => {
     if (!formData.name.trim()) { alert('请输入动作名称'); return; }
     if (!formData.bodyPart.trim()) { alert('请选择目标部位'); return; }
     if (!formData.description.trim()) { alert('请输入动作描述'); return; }
@@ -217,33 +159,40 @@ const AdminExercises = () => {
     if (stepsList.length === 0) { alert('请至少输入一个执行步骤'); return; }
     if (tipsList.length === 0) { alert('请至少输入一条注意事项'); return; }
 
-    const newExercise = {
+    const data = {
       name: formData.name,
       bodyPart: formData.bodyPart,
       difficulty: formData.difficulty,
       description: formData.description,
       imageUrl: formData.imageUrl || '',
+      tips: tipsList.join('\n'),
       steps: stepsList,
-      tips: tipsList,
       commonMistakes: mistakesList,
-      status,
     };
 
-    if (editing) {
-      setExercises(exercises.map(e => e.id === editing.id ? { ...e, ...newExercise } : e));
-    } else {
-      setExercises([...exercises, {
-        id: Date.now(),
-        ...newExercise,
-        createdAt: new Date().toISOString().split('T')[0]
-      }]);
+    try {
+      if (editing) {
+        await updateAdminExercise(editing.id, data);
+      } else {
+        await createAdminExercise(data);
+      }
+      closeForm();
+      fetchExercises();
+    } catch (error) {
+      console.error('保存失败:', error);
+      alert('保存失败，请重试');
     }
-    closeForm();
   };
 
-  const deleteExercise = (id: number) => {
+  const deleteExercise = async (id: number) => {
     if (!confirm('确定要删除该动作吗？')) return;
-    setExercises(exercises.filter(e => e.id !== id));
+    try {
+      await deleteAdminExercise(id);
+      fetchExercises();
+    } catch (error) {
+      console.error('删除失败:', error);
+      alert('删除失败，请重试');
+    }
   };
 
   if (loading) {
@@ -252,7 +201,6 @@ const AdminExercises = () => {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      {/* 页面标题 */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 tracking-tight">动作管理</h1>
@@ -266,7 +214,6 @@ const AdminExercises = () => {
         </button>
       </div>
 
-      {/* 搜索和筛选 */}
       <div className="flex flex-wrap items-center gap-3 mb-4">
         <div className="relative flex-1 min-w-[200px]">
           <input
@@ -298,7 +245,6 @@ const AdminExercises = () => {
         <span className="text-xs text-slate-400 ml-auto">共 {filtered.length} 个动作</span>
       </div>
 
-      {/* 表单 */}
       {showForm && (
         <div className="bg-white rounded-xl border border-slate-100 p-5 shadow-sm mb-4">
           <h2 className="font-medium text-slate-700 mb-3">{editing ? '编辑动作' : '新增动作'}</h2>
@@ -410,7 +356,6 @@ const AdminExercises = () => {
         </div>
       )}
 
-      {/* 动作表格 */}
       <div className="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">

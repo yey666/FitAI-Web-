@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { getAdminCheckins, deleteAdminCheckin } from '@/api/admin';
 
 interface Checkin {
   id: number;
@@ -12,6 +13,10 @@ interface Checkin {
   createdAt: string;
 }
 
+const Icons = {
+  search: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+};
+
 const AdminCheckins = () => {
   const [checkins, setCheckins] = useState<Checkin[]>([]);
   const [filtered, setFiltered] = useState<Checkin[]>([]);
@@ -20,15 +25,7 @@ const AdminCheckins = () => {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   useEffect(() => {
-    setTimeout(() => {
-      setCheckins([
-        { id: 1, userId: 2, username: 'testuser', content: '今天深蹲突破 100kg！坚持就是胜利，记录一下这个里程碑。', images: [], likes: 12, commentCount: 2, createdAt: '2小时前' },
-        { id: 2, userId: 3, username: 'kkk', content: '晨跑打卡 5km，配速 5:30，感觉状态不错。今天天气也很好，适合运动。', images: [], likes: 8, commentCount: 1, createdAt: '昨天' },
-        { id: 3, userId: 1, username: 'admin', content: '完成了一周的训练计划，下周继续加油！💪', images: [], likes: 15, commentCount: 3, createdAt: '3天前' },
-        { id: 4, userId: 4, username: 'sarah_c', content: '瑜伽晨练 30 分钟，身心都放松了 🧘', images: [], likes: 6, commentCount: 0, createdAt: '4天前' },
-      ]);
-      setLoading(false);
-    }, 400);
+    fetchCheckins();
   }, []);
 
   useEffect(() => {
@@ -37,9 +34,35 @@ const AdminCheckins = () => {
     setFiltered(result);
   }, [search, checkins]);
 
-  const deleteCheckin = (id: number) => {
+  const fetchCheckins = async () => {
+    try {
+      const data = await getAdminCheckins();
+      setCheckins(data.map((c: any) => ({
+        id: c.id,
+        userId: c.userId,
+        username: c.username,
+        content: c.content,
+        images: c.images || [],
+        likes: c.likes || 0,
+        commentCount: c.commentCount || 0,
+        createdAt: c.createdAt || '',
+      })));
+    } catch (error) {
+      console.error('获取打卡列表失败:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteCheckin = async (id: number) => {
     if (!confirm('确定要删除该打卡吗？')) return;
-    setCheckins(checkins.filter(c => c.id !== id));
+    try {
+      await deleteAdminCheckin(id);
+      setCheckins(checkins.filter(c => c.id !== id));
+    } catch (error) {
+      console.error('删除失败:', error);
+      alert('删除失败，请重试');
+    }
   };
 
   const toggleSelect = (id: number) => {
@@ -50,11 +73,19 @@ const AdminCheckins = () => {
     setSelectedIds(prev => prev.length === filtered.length ? [] : filtered.map(c => c.id));
   };
 
-  const batchDelete = () => {
+  const batchDelete = async () => {
     if (!selectedIds.length) return;
     if (!confirm(`确定要删除选中的 ${selectedIds.length} 条打卡吗？`)) return;
-    setCheckins(checkins.filter(c => !selectedIds.includes(c.id)));
-    setSelectedIds([]);
+    try {
+      for (const id of selectedIds) {
+        await deleteAdminCheckin(id);
+      }
+      setCheckins(checkins.filter(c => !selectedIds.includes(c.id)));
+      setSelectedIds([]);
+    } catch (error) {
+      console.error('批量删除失败:', error);
+      alert('批量删除失败，请重试');
+    }
   };
 
   if (loading) {
@@ -62,10 +93,10 @@ const AdminCheckins = () => {
   }
 
   const totalLikes = checkins.reduce((s, c) => s + c.likes, 0);
+  const totalComments = checkins.reduce((s, c) => s + c.commentCount, 0);
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      {/* 页面标题 */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 tracking-tight">打卡管理</h1>
@@ -81,12 +112,11 @@ const AdminCheckins = () => {
         )}
       </div>
 
-      {/* 统计卡片 */}
       <div className="grid grid-cols-3 gap-3 mb-5">
         {[
           { label: '总打卡', value: checkins.length, color: '#1e293b' },
           { label: '总点赞', value: totalLikes, color: '#3b82f6' },
-          { label: '总评论', value: checkins.reduce((s, c) => s + c.commentCount, 0), color: '#8b5cf6' },
+          { label: '总评论', value: totalComments, color: '#8b5cf6' },
         ].map((item) => (
           <div key={item.label} className="bg-white rounded-lg border border-slate-100 px-4 py-3 shadow-sm">
             <p className="text-xs text-slate-400">{item.label}</p>
@@ -95,13 +125,13 @@ const AdminCheckins = () => {
         ))}
       </div>
 
-      {/* 搜索 */}
       <div className="flex flex-wrap items-center gap-3 mb-4">
         <div className="relative flex-1 min-w-[200px]">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{Icons.search}</span>
           <input
             type="text"
             placeholder="搜索用户名或打卡内容..."
-            className="w-full px-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-slate-300 transition-colors"
+            className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-slate-300 transition-colors"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -109,7 +139,6 @@ const AdminCheckins = () => {
         <span className="text-xs text-slate-400 ml-auto">共 {filtered.length} 条打卡</span>
       </div>
 
-      {/* 打卡表格 */}
       <div className="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -141,7 +170,7 @@ const AdminCheckins = () => {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-medium text-slate-600">
-                        {item.username[0].toUpperCase()}
+                        {item.username?.[0]?.toUpperCase() || 'U'}
                       </div>
                       <span className="font-medium text-slate-700">{item.username}</span>
                     </div>

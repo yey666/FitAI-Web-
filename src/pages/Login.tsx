@@ -39,6 +39,8 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    console.log('准备发送登录请求:', { username, password });
+
   e.preventDefault();
   setError('');
   setLoading(true);
@@ -61,8 +63,7 @@ const Login = () => {
       id: data.userId,
       username: data.username,
       email: data.email,
-      role: data.role || 'user',  // ✅ 关键：读取 role
-    };
+      role: data.role?.toLowerCase() || 'user',    };
 
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(user));

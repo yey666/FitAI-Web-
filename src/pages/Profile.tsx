@@ -85,20 +85,48 @@ const Profile = () => {
   const [avatarUploading, setAvatarUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const fetchData = async () => {
-    try {
-      const [profileData, checkinData] = await Promise.all([
-        getProfile(),
-        getUserCheckins(),
-      ]);
-      setProfile(profileData);
-      setCheckins(checkinData);
-    } catch (error) {
-      console.error('加载个人数据失败:', error);
-    } finally {
+const fetchData = async () => {
+  try {
+    const userId = user?.id;
+    if (!userId) {
+      console.error('用户未登录');
       setLoading(false);
+      return;
     }
-  };
+
+    const profileData = await getProfile(userId);
+    console.log('个人资料返回:', profileData);
+
+    setProfile({
+      id: profileData.userId || profileData.id,
+      username: profileData.username,
+      email: user?.email || '',
+      avatar: profileData.avatar,
+      nickname: profileData.nickname,
+      gender: profileData.gender,
+      bio: profileData.bio,
+      height: profileData.height || 0,
+      weight: profileData.weight || 0,
+      goal: profileData.goal || '未设置',
+      totalWorkouts: profileData.stats?.totalWorkouts || 0,
+      totalDuration: profileData.stats?.totalDuration || 0,
+      totalCalories: profileData.stats?.totalCalories || 0,
+    });
+
+    // 从 recentCheckins 提取打卡列表
+    const checkins = (profileData.recentCheckins || []).map((item: any) => ({
+      id: item.id,
+      content: item.content || '',
+      time: item.createdAt || '刚刚',
+    }));
+    setCheckins(checkins);
+
+  } catch (error) {
+    console.error('加载个人数据失败:', error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchData();

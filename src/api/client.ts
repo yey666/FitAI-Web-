@@ -2,13 +2,10 @@ import axios from 'axios';
 import type { AxiosResponse } from 'axios';
 
 // ============ Mock 开关 ============
-export const USE_MOCK = true;  // true → Mock 模式，false → 真实接口
-
+export const USE_MOCK = false;  // true → Mock 模式，false → 真实接口
 // ====================================
 
-const REAL_BASE_URL = USE_MOCK ? '' : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080');
-
-// 统一响应格式
+const REAL_BASE_URL = USE_MOCK ? '' : (import.meta.env.VITE_API_BASE_URL || 'http://192.168.106.235:8080');
 interface ApiResponse<T = any> {
   code: number;
   message: string;
@@ -36,13 +33,15 @@ const mockError = (message: string) => ({
 });
 
 // 创建 axios 实例
+// 注意：不要在此处写死 Content-Type，axios 会自动为 JSON 请求设置 application/json，
+// 并为 FormData 上传设置 multipart/form-data（带 boundary）。写死会导致文件上传失败。
 const apiClient = axios.create({
   baseURL: REAL_BASE_URL,
   timeout: 60000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
+// ===== 👇 在这下面添加 =====
+console.log('API Base URL:', REAL_BASE_URL);
+console.log('USE_MOCK:', USE_MOCK);
 
 // ============ 请求拦截器 ============
 apiClient.interceptors.request.use(
@@ -74,7 +73,11 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     console.error(`[API Error]`, error);
-    
+    console.error('[API Error] 请求 URL:', error.config?.url);
+    console.error('[API Error] 状态码:', error.response?.status);
+    console.error('[API Error] 响应体:', error.response?.data);
+    console.error('[API Error] 请求头 Content-Type:', error.config?.headers?.get?.('Content-Type'));
+
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');

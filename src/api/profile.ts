@@ -44,8 +44,8 @@ const mockCheckins: CheckinItem[] = [
   { id: 2, content: '晨跑打卡5公里', time: '昨天' },
 ];
 
-// ===== 1. 个人主页数据 =====
-export const getProfile = async (userId?: number): Promise<ProfileData> => {
+// ===== 1. 个人主页数据（包含统计和打卡） =====
+export const getProfile = async (userId?: number): Promise<any> => {
   if (USE_MOCK) {
     await mockDelay(300);
     return { ...mockProfile };
@@ -89,12 +89,18 @@ export const updateProfile = async (data: {
   return apiClient.put('/api/profile', data);
 };
 
-// ===== 4. 个人打卡列表 =====
+// ===== 4. 个人打卡列表（已废弃，不再使用） =====
+// 打卡列表已包含在 getProfile 返回的 recentCheckins 中
 export const getUserCheckins = async (userId?: number): Promise<CheckinItem[]> => {
   if (USE_MOCK) {
     await mockDelay(300);
     return [...mockCheckins];
   }
   const id = userId || 1;
-  return apiClient.get(`/api/profile/${id}/checkins`);
+  try {
+    return await apiClient.get(`/api/profile/${id}/checkins`);
+  } catch (error) {
+    console.error('获取打卡列表失败:', error);
+    return [];
+  }
 };

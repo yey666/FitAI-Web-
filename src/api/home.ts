@@ -87,8 +87,21 @@ export const getStats = async (): Promise<Stats> => {
 export const getRecentActivities = async (): Promise<Activity[]> => {
   if (USE_MOCK) { await mockDelay(300); return mockActivities; }
   try {
-    const res = await apiClient.get('/api/community/feed');
-    const list = res?.data?.records || res?.data || res || [];
+    const res: any = await apiClient.get('/api/community/feed');
+    console.log('社区接口返回:', res);
+    
+    // 适配后端实际返回结构：{ records: [...], total, size, current, pages }
+    let list = [];
+    if (res?.records && Array.isArray(res.records)) {
+      list = res.records;
+    } else if (Array.isArray(res)) {
+      list = res;
+    } else if (res?.data && Array.isArray(res.data)) {
+      list = res.data;
+    } else {
+      return [];
+    }
+
     return list.map((item: any) => ({
       id: item.id,
       type: item.type || 'checkin',

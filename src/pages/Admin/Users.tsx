@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { getAdminUsers, toggleUserStatus, deleteAdminUser } from '@/api/admin';
 
 interface User {
   id: number;
@@ -16,10 +17,6 @@ interface User {
 
 const Icons = {
   search: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
-  filter: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>,
-  close: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
-  check: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>,
-  x: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
 };
 
 const AdminUsers = () => {
@@ -32,16 +29,7 @@ const AdminUsers = () => {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   useEffect(() => {
-    setTimeout(() => {
-      setUsers([
-        { id: 1, username: 'admin', email: 'admin@fitai.com', role: 'admin', status: 'active', createdAt: '2026-01-01', lastActive: '2026-07-06 14:32', workoutCount: 156, checkinCount: 42 },
-        { id: 2, username: 'testuser', email: 'test@test.com', role: 'user', status: 'active', createdAt: '2026-06-01', lastActive: '2026-07-06 10:15', workoutCount: 23, checkinCount: 8 },
-        { id: 3, username: 'kkk', email: 'kkk@test.com', role: 'user', status: 'disabled', createdAt: '2026-06-15', lastActive: '2026-07-04 09:20', workoutCount: 12, checkinCount: 5 },
-        { id: 4, username: 'sarah_c', email: 'sarah@fit.com', role: 'user', status: 'active', createdAt: '2026-06-20', lastActive: '2026-07-06 08:45', workoutCount: 34, checkinCount: 15 },
-        { id: 5, username: 'mike_z', email: 'mike@fit.com', role: 'user', status: 'active', createdAt: '2026-06-25', lastActive: '2026-07-05 18:30', workoutCount: 18, checkinCount: 7 },
-      ]);
-      setLoading(false);
-    }, 400);
+    fetchUsers();
   }, []);
 
   useEffect(() => {
@@ -52,13 +40,50 @@ const AdminUsers = () => {
     setFiltered(result);
   }, [search, filterRole, filterStatus, users]);
 
-  const toggleStatus = (id: number) => {
-    setUsers(users.map(u => u.id === id ? { ...u, status: u.status === 'active' ? 'disabled' : 'active' } : u));
+  const fetchUsers = async () => {
+    try {
+      const data = await getAdminUsers();
+      console.log('用户列表原始数据:', data);  
+      setUsers(data.map((u: any) => ({
+        id: u.id,
+        username: u.username,
+        email: u.email,
+       role: u.role?.toLowerCase() === 'admin' ? 'admin' : 'user',
+        status: u.deleted === 0 ? 'active' : 'disabled',
+        createdAt: u.createdAt || '',
+        lastActive: u.lastActive || '',
+        workoutCount: u.workoutCount || 0,
+        checkinCount: u.checkinCount || 0,
+      })));
+    } catch (error) {
+      console.error('获取用户列表失败:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const deleteUser = (id: number) => {
+  const toggleStatus = async (userId: number, currentStatus: string) => {
+    const newStatus = currentStatus === 'active' ? 'DISABLED' : 'ENABLED';
+    const action = newStatus === 'DISABLED' ? '禁用' : '启用';
+    if (!confirm(`确定要${action}该用户吗？`)) return;
+    try {
+      await toggleUserStatus(userId, newStatus);
+      setUsers(users.map(u => u.id === userId ? { ...u, status: newStatus === 'ENABLED' ? 'active' : 'disabled' } : u));
+    } catch (error) {
+      console.error('操作失败:', error);
+      alert('操作失败，请重试');
+    }
+  };
+
+  const deleteUser = async (userId: number) => {
     if (!confirm('确定要删除该用户吗？此操作不可撤销。')) return;
-    setUsers(users.filter(u => u.id !== id));
+    try {
+      await deleteAdminUser(userId);
+      setUsers(users.filter(u => u.id !== userId));
+    } catch (error) {
+      console.error('删除失败:', error);
+      alert('删除失败，请重试');
+    }
   };
 
   const toggleSelect = (id: number) => {
@@ -69,45 +94,48 @@ const AdminUsers = () => {
     setSelectedIds(prev => prev.length === filtered.length ? [] : filtered.map(u => u.id));
   };
 
-  const batchDelete = () => {
+  const batchDelete = async () => {
     if (!selectedIds.length) return;
     if (!confirm(`确定要删除选中的 ${selectedIds.length} 个用户吗？`)) return;
-    setUsers(users.filter(u => !selectedIds.includes(u.id)));
-    setSelectedIds([]);
+    try {
+      for (const id of selectedIds) {
+        await deleteAdminUser(id);
+      }
+      setUsers(users.filter(u => !selectedIds.includes(u.id)));
+      setSelectedIds([]);
+    } catch (error) {
+      console.error('批量删除失败:', error);
+      alert('批量删除失败，请重试');
+    }
   };
 
   if (loading) {
     return <div className="p-6 text-center text-slate-400">加载中...</div>;
   }
 
-  const stats = {
-    total: users.length,
-    active: users.filter(u => u.status === 'active').length,
-    disabled: users.filter(u => u.status === 'disabled').length,
-    admin: users.filter(u => u.role === 'admin').length,
-  };
-
+const stats = {
+  total: users.length,
+  active: users.filter(u => u.status === 'active').length,
+  disabled: users.filter(u => u.status === 'disabled').length,
+  admin: users.filter(u => u.role?.toLowerCase() === 'admin').length,  //  大小写都匹配
+};
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      {/* 页面标题 */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 tracking-tight">用户管理</h1>
           <p className="text-sm text-slate-400">管理平台所有注册用户</p>
         </div>
-        <div className="flex items-center gap-3">
-          {selectedIds.length > 0 && (
-            <button
-              onClick={batchDelete}
-              className="px-4 py-2 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors"
-            >
-              删除选中 ({selectedIds.length})
-            </button>
-          )}
-        </div>
+        {selectedIds.length > 0 && (
+          <button
+            onClick={batchDelete}
+            className="px-4 py-2 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors"
+          >
+            删除选中 ({selectedIds.length})
+          </button>
+        )}
       </div>
 
-      {/* 统计卡片 */}
       <div className="grid grid-cols-4 gap-3 mb-5">
         {[
           { label: '总用户', value: stats.total, color: '#1e293b' },
@@ -122,7 +150,6 @@ const AdminUsers = () => {
         ))}
       </div>
 
-      {/* 搜索和筛选 */}
       <div className="flex flex-wrap items-center gap-3 mb-4">
         <div className="relative flex-1 min-w-[200px]">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{Icons.search}</span>
@@ -155,7 +182,6 @@ const AdminUsers = () => {
         <span className="text-xs text-slate-400 ml-auto">共 {filtered.length} 个用户</span>
       </div>
 
-      {/* 用户表格 */}
       <div className="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -198,7 +224,7 @@ const AdminUsers = () => {
                     <span className={`px-2 py-0.5 rounded-full text-xs ${
                       user.role === 'admin' ? 'bg-purple-50 text-purple-600' : 'bg-slate-100 text-slate-500'
                     }`}>
-                      {user.role === 'admin' ? '管理员' : '用户'}
+                     {user.role?.toLowerCase() === 'admin' ? '管理员' : '用户'}
                     </span>
                   </td>
                   <td className="px-4 py-3">
@@ -216,7 +242,7 @@ const AdminUsers = () => {
                         className={`text-xs px-2 py-1 rounded transition-colors ${
                           user.status === 'active' ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50'
                         }`}
-                        onClick={() => toggleStatus(user.id)}
+                        onClick={() => toggleStatus(user.id, user.status)}
                       >
                         {user.status === 'active' ? '禁用' : '启用'}
                       </button>

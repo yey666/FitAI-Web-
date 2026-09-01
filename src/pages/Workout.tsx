@@ -65,7 +65,7 @@ interface WorkoutRecord {
   sets: number;
   reps: number;
   duration: number;
-  date: string;
+  workoutDate: string;
 }
 
 interface Exercise {
@@ -95,36 +95,54 @@ const Workout = () => {
     date: new Date().toISOString().split('T')[0],
   });
 
-  const fetchData = async () => {
-    try {
-      const [list, calendar, exercises] = await Promise.all([
-        getWorkoutList(),
-        getWorkoutCalendar(),
-        getExercises(),
-      ]);
-      setRecords(list);
-      setCalendarData(calendar);
-      setExerciseOptions(exercises);
-    } catch (error) {
-      console.error('加载失败:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+const fetchData = async () => {
+  try {
+    const now = new Date();
+    const yearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    
+    const [list, calendar, exercises] = await Promise.all([
+      getWorkoutList(),
+      getWorkoutCalendar(yearMonth),
+      getExercises(),
+    ]);
+    console.log('训练列表返回:', list);
+    console.log('日历返回:', calendar);
+    console.log('动作列表返回:', exercises);
+    setRecords(list);
+    setCalendarData(calendar);
+    setExerciseOptions(exercises);
+  } catch (error) {
+    console.error('加载失败:', error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchData();
   }, []);
 
   const handleSubmit = async () => {
+    // 从动作库中找到选中动作的 id（后端需要 exerciseId，而不是 exerciseName）
+    const selectedExercise = exerciseOptions.find(
+      (opt) => opt.name === form.exerciseName
+    );
+    if (!selectedExercise) {
+      alert('请选择训练动作');
+      return;
+    }
+
     const data = {
-      exerciseName: form.exerciseName,
+      exerciseId: selectedExercise.id,
+      exerciseName: selectedExercise.name,
       weight: parseFloat(form.weight) || 0,
       sets: parseInt(form.sets) || 0,
       reps: parseInt(form.reps) || 0,
       duration: parseInt(form.duration) || 0,
-      date: form.date,
+      workoutDate: form.date,
     };
+
+    console.log('提交的训练数据:', data);
 
     if (editingId) {
       await updateWorkout(editingId, data);
@@ -146,7 +164,7 @@ const Workout = () => {
       sets: String(record.sets),
       reps: String(record.reps),
       duration: String(record.duration),
-      date: record.date,
+      date: record.workoutDate,
     });
     setDialogOpen(true);
   };
@@ -164,7 +182,7 @@ const Workout = () => {
     const month = new Date().getMonth() + 1;
     const day = dayIndex + 1;
     const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const filtered = records.filter(r => r.date === dateStr);
+    const filtered = records.filter(r => r.workoutDate === dateStr);
     setSelectedDate(dateStr);
     setDayRecords(filtered);
     setDayDetailOpen(true);
@@ -412,7 +430,7 @@ const Workout = () => {
                 >
                   <div className="flex items-center gap-4 min-w-0">
                     <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xs font-light flex-shrink-0">
-                      {record.exerciseName.slice(0, 2)}
+                      {record.exerciseName?.slice(0, 2) || '--'}
                     </div>
                     <div>
                       <p className="text-sm font-medium text-slate-700">{record.exerciseName}</p>
@@ -422,7 +440,7 @@ const Workout = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className="text-xs text-slate-300 font-light">{record.date}</span>
+                    <span className="text-xs text-slate-300 font-light">{record.workoutDate}</span>
                     {shouldShowAdminActions() && (
   <>
     <button onClick={() => handleEdit(record)} className="p-1 rounded hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600">

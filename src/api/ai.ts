@@ -31,7 +31,7 @@ const generateMockPlan = (params: PlanParams): string => {
         '周五': { name: '腿部 + 肩部', exercises: ['深蹲 4组 × 10次', '腿举 4组 × 12次', '推举 3组 × 10次'] },
       };
       return gymPlans[day] || gymPlans['周一'];
-    } else if (venue === '宿舍') {
+    } else if (venue === '居家') {
       return { name: '徒手训练', exercises: ['俯卧撑 4组 × 15次', '深蹲 4组 × 20次', '平板支撑 4组 × 60秒'] };
     } else {
       return { name: '户外训练', exercises: ['慢跑 30分钟', '深蹲 4组 × 20次', '引体向上 4组 × 8次'] };
@@ -64,7 +64,7 @@ const generateMockPlan = (params: PlanParams): string => {
   content += `1. 每次训练前热身 5-10 分钟\n`;
   content += `2. 训练后拉伸 10 分钟\n`;
   content += `3. 保持充足睡眠和水分摄入\n`;
-  content += `4. ${experience === '初级' ? '建议先从轻重量开始，逐步增加' : '注意动作质量，可适当增加负重'}\n`;  // ← level 改成 experience
+  content += `4. ${experience === '新手' || experience === '初级' ? '建议先从轻重量开始，逐步增加' : '注意动作质量，可适当增加负重'}\n`;  // ← level 改成 experience
 
   return content;
 };

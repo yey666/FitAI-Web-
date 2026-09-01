@@ -32,7 +32,7 @@ export const useAuthStore = create<AuthState>()(
       login: (token, user) => {
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
-        const viewMode = user.role === 'admin' ? 'admin' : 'user';
+        const viewMode = user.role?.toLowerCase() === 'admin' ? 'admin' : 'user';
         set({ token, user, isAuthenticated: true, viewMode });
       },
 
@@ -45,13 +45,13 @@ export const useAuthStore = create<AuthState>()(
       setAuth: (token, user) => {
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
-        const viewMode = user.role === 'admin' ? 'admin' : 'user';
+        const viewMode = user.role?.toLowerCase() === 'admin' ? 'admin' : 'user';
         set({ token, user, isAuthenticated: true, viewMode });
       },
 
       toggleView: () => {
         const state = get();
-        if (state.user?.role !== 'admin') return;
+        if (state.user?.role?.toLowerCase() !== 'admin') return;
         set({ viewMode: state.viewMode === 'admin' ? 'user' : 'admin' });
       },
 
