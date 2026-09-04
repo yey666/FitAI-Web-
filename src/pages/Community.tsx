@@ -2,9 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { getFeed, createCheckin, toggleLike, addComment, deleteCheckin } from '@/api/community';
+import { getFeed, createCheckin, toggleLike, deleteCheckin, getLikeStatus } from '@/api/community';
 import { motion } from 'framer-motion';
 import { shouldShowAdminActions } from '@/utils/auth';
 
@@ -24,11 +23,6 @@ const Icons = {
   heartFilled: (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="#ef4444" stroke="none">
       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-    </svg>
-  ),
-  comment: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
     </svg>
   ),
   plus: (
@@ -76,14 +70,6 @@ const Icons = {
   ),
 };
 
-interface Comment {
-  id: number;
-  userId: number;
-  username: string;
-  content: string;
-  time: string;
-}
-
 interface Checkin {
   id: number;
   userId: number;
@@ -93,8 +79,6 @@ interface Checkin {
   images: string[];
   likes: number;
   isLiked: boolean;
-  commentCount: number;
-  comments: Comment[];
   time: string;
 }
 
@@ -107,13 +91,24 @@ const Community = () => {
   const [selectedCheckin, setSelectedCheckin] = useState<Checkin | null>(null);
   const [newContent, setNewContent] = useState('');
   const [newImages, setNewImages] = useState<string[]>([]);
-  const [commentInput, setCommentInput] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchData = async () => {
     try {
       const data = await getFeed();
-      setFeed(Array.isArray(data) ? data : []);
+      const list = Array.isArray(data) ? data : [];
+      // 逐个查询当前用户对每个帖子的点赞状态，并挂到 isLiked 上
+      const withStatus = await Promise.all(
+        list.map(async (item) => {
+          try {
+            const liked = await getLikeStatus(item.id);
+            return { ...item, isLiked: !!liked };
+          } catch {
+            return { ...item, isLiked: false };
+          }
+        })
+      );
+      setFeed(withStatus);
     } catch (error) {
       console.error('加载动态失败:', error);
       setFeed([]);
@@ -136,21 +131,34 @@ const Community = () => {
   };
 
   const handleLike = async (id: number) => {
-    await toggleLike(id);
-    fetchData();
-    if (selectedCheckin && selectedCheckin.id === id) {
-      const updated = feed.find(f => f.id === id);
-      if (updated) setSelectedCheckin(updated);
-    }
-  };
+    const target = feed.find((f) => f.id === id);
+    const wasLiked = target?.isLiked ?? selectedCheckin?.isLiked ?? false;
+    const nextLiked = !wasLiked;
 
-  const handleAddComment = async (checkinId: number) => {
-    if (!commentInput.trim()) return;
-    await addComment(checkinId, commentInput);
-    setCommentInput('');
-    fetchData();
-    const updated = feed.find(f => f.id === checkinId);
-    if (updated) setSelectedCheckin(updated);
+    // 更新 feed 与详情弹窗里对应帖子的 isLiked
+    const applyLikeState = (liked: boolean) => {
+      setFeed((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, isLiked: liked } : item))
+      );
+      setSelectedCheckin((prev) =>
+        prev && prev.id === id ? { ...prev, isLiked: liked } : prev
+      );
+    };
+
+    try {
+      await toggleLike(id, wasLiked);
+      // 接口成功：立即切换本地状态（灰↔红）
+      applyLikeState(nextLiked);
+    } catch (err) {
+      console.error('点赞/取消点赞失败，回查真实状态:', err);
+      // 失败（如 400 重复点赞）→ 回查服务端状态，覆盖本地
+      try {
+        const serverLiked = await getLikeStatus(id);
+        applyLikeState(!!serverLiked);
+      } catch (e2) {
+        console.error('查询点赞状态失败:', e2);
+      }
+    }
   };
 
   const handleDeleteCheckin = async (checkinId: number) => {
@@ -170,7 +178,6 @@ const Community = () => {
   const openDetail = (checkin: Checkin) => {
     setSelectedCheckin(checkin);
     setDetailOpen(true);
-    setCommentInput('');
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -310,14 +317,6 @@ const Community = () => {
                         onClick={(e) => { e.stopPropagation(); handleLike(item.id); }}
                       >
                         {item.isLiked ? Icons.heartFilled : Icons.heart}
-                        <span className={item.isLiked ? 'text-red-500' : ''}>{item.likes}</span>
-                      </button>
-                      <button
-                        className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors"
-                        onClick={(e) => { e.stopPropagation(); openDetail(item); }}
-                      >
-                        {Icons.comment}
-                        <span>{item.commentCount || 0}</span>
                       </button>
                       {shouldShowAdminActions() && (
                         <button
@@ -375,7 +374,6 @@ const Community = () => {
                       onClick={() => handleLike(selectedCheckin.id)}
                     >
                       {selectedCheckin.isLiked ? Icons.heartFilled : Icons.heart}
-                      <span className={selectedCheckin.isLiked ? 'text-red-500' : ''}>{selectedCheckin.likes}</span>
                     </button>
                     {shouldShowAdminActions() && (
                       <button
@@ -386,34 +384,6 @@ const Community = () => {
                         删除
                       </button>
                     )}
-                  </div>
-                  <div className="border-t border-slate-200/50 pt-4 mb-4 max-h-48 overflow-y-auto">
-                    <p className="text-xs text-slate-400 font-light mb-3">评论 · {selectedCheckin.commentCount || 0}</p>
-                    {selectedCheckin.comments && selectedCheckin.comments.length > 0 ? (
-                      <div className="space-y-3">
-                        {selectedCheckin.comments.map((comment) => (
-                          <div key={comment.id} className="flex items-start gap-2">
-                            <span className="text-xs font-medium text-slate-600 min-w-[32px]">{comment.username}:</span>
-                            <span className="text-xs text-slate-500 font-light">{comment.content}</span>
-                            <span className="text-[10px] text-slate-300 ml-auto">{comment.time}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-xs text-slate-400 font-light text-center py-2">暂无评论</p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      placeholder="写下你的评论..."
-                      className="flex-1 rounded-lg border-slate-200 focus:border-slate-400 focus:ring-0 text-sm font-light h-9"
-                      value={commentInput}
-                      onChange={(e) => setCommentInput(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter') handleAddComment(selectedCheckin.id); }}
-                    />
-                    <Button size="sm" className="bg-slate-800 hover:bg-slate-700 text-white rounded-lg px-4 h-9" onClick={() => handleAddComment(selectedCheckin.id)}>
-                      {Icons.send}
-                    </Button>
                   </div>
                 </div>
               </>

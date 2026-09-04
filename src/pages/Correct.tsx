@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { uploadVideo, analyzePose, getCorrectHistory } from '@/api/correct';
+import { uploadVideo, analyzeVideo, getCorrectHistory } from '@/api/correct';
 
 // ===== 图标 =====
 const Icons = {
@@ -31,37 +31,53 @@ const Icons = {
       <polyline points="22 4 12 14.01 9 11.01" />
     </svg>
   ),
-  angle: (
+  issues: (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-      <path d="M12 8v4l3 3" />
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="8" x2="12" y2="12" />
+      <line x1="12" y1="16" x2="12.01" y2="16" />
     </svg>
   ),
 };
 
 // ===== 类型定义 =====
-interface JointAngle {
-  joint: string;
-  angle: number;
-  standard: number;
-  status: string;
-}
-
 interface AnalyzeResult {
-  id: number;
-  exerciseName: string;
-  videoUrl: string;
   score: number;
-  jointAngles: JointAngle[];
+  issues: string[];
   suggestions: string[];
 }
 
 interface HistoryItem {
   id: number;
-  exerciseType: string;
+  exerciseName: string;
   score: number;
-  date: string;
+  createdAt: string;
 }
+
+// ===== 思考中指示器：三个跳动的小点 =====
+const ThinkingDots = () => (
+  <span className="inline-flex items-center gap-1 ml-1">
+    {[0, 150, 300].map((delay) => (
+      <span
+        key={delay}
+        className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce"
+        style={{ animationDelay: `${delay}ms` }}
+      />
+    ))}
+  </span>
+);
+
+// ===== 思考中状态块：emoji + 标题 + 跳动点 + 副标题 =====
+const ThinkingState = ({ emoji, title, subtitle }: { emoji: string; title: string; subtitle: string }) => (
+  <div className="mt-6 flex flex-col items-center justify-center py-12 text-slate-500">
+    <span className="text-4xl mb-4">{emoji}</span>
+    <p className="text-sm font-light flex items-center">
+      {title}
+      <ThinkingDots />
+    </p>
+    <p className="text-xs text-slate-400 font-light mt-2">{subtitle}</p>
+  </div>
+);
 
 const Correct = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -108,15 +124,11 @@ const Correct = () => {
     setUploading(true);
     setAnalyzing(true);
     try {
-      // 1) 上传视频，拿到后端返回的 videoUrl
+      // 1) 上传视频，拿到后端返回的媒体地址 mediaUrl
       const uploadedUrl = await uploadVideo(file);
-      // 2) 用 videoUrl 自动调用分析接口
-      const data = await analyzePose({ videoUrl: uploadedUrl, exerciseName });
+      // 2) 用 mediaUrl 自动调用分析接口
+      const data = await analyzeVideo({ videoUrl: uploadedUrl, exerciseName });
       setResult(data);
-
-      // 3) 刷新历史记录
-      const newHistory = await getCorrectHistory();
-      setHistory(newHistory);
     } catch (err: any) {
       console.error('分析失败:', err);
       setError(err?.message || '分析失败，请稍后重试');
@@ -124,6 +136,9 @@ const Correct = () => {
       setUploading(false);
       setAnalyzing(false);
     }
+
+    // 3) 刷新历史记录（失败不影响分析结果展示，不触发红色错误横幅）
+    getCorrectHistory().then(setHistory).catch(() => {});
 
     // 重置 input，允许再次选择同一个文件
     e.target.value = '';
@@ -145,14 +160,6 @@ const Correct = () => {
     if (score >= 80) return '#22c55e';
     if (score >= 60) return '#eab308';
     return '#ef4444';
-  };
-
-  const getStatusClass = (status: string) => {
-    if (!status) return 'bg-slate-100 text-slate-500';
-    if (status.includes('标准') || status.includes('正常') || status.includes('合格')) {
-      return 'bg-emerald-50 text-emerald-600';
-    }
-    return 'bg-amber-50 text-amber-600';
   };
 
   const isBusy = uploading || analyzing;
@@ -215,8 +222,8 @@ const Correct = () => {
                     history.map((item) => (
                       <div key={item.id} className="flex justify-between items-center bg-slate-50/60 rounded-lg p-3">
                         <div>
-                          <p className="text-sm font-medium text-slate-700">{item.exerciseType}</p>
-                          <p className="text-xs text-slate-400 font-light">{item.date}</p>
+                          <p className="text-sm font-medium text-slate-700">{item.exerciseName}</p>
+                          <p className="text-xs text-slate-400 font-light">{item.createdAt}</p>
                         </div>
                         <span className={`text-sm font-medium ${getScoreColor(item.score)}`}>{item.score}分</span>
                       </div>
@@ -283,44 +290,31 @@ const Correct = () => {
 
       {/* ===== 结果区 ===== */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* 关节角度 */}
+        {/* 问题列表 */}
         <Card className="border-0 shadow-none bg-slate-50/60 rounded-xl">
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-4">
-              {Icons.angle}
-              <span className="text-xs text-slate-500 font-light uppercase tracking-wider">关节角度分析</span>
+              {Icons.issues}
+              <span className="text-xs text-slate-500 font-light uppercase tracking-wider">发现的问题</span>
             </div>
-            {result && result.jointAngles?.length > 0 ? (
-              <div className="space-y-4">
-                {result.jointAngles.map((item, idx) => (
-                  <div key={idx}>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-600 font-light">{item.joint}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-slate-400 font-light">标准 {item.standard}°</span>
-                        <span className="font-medium text-slate-700">{item.angle}°</span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-light ${getStatusClass(item.status)}`}>
-                          {item.status}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="w-full h-1.5 bg-slate-200 rounded-full mt-1.5 overflow-hidden">
-                      <div
-                        className="h-full bg-slate-400 rounded-full transition-all duration-300"
-                        style={{ width: `${Math.min((item.angle / 180) * 100, 100)}%` }}
-                      />
-                    </div>
-                  </div>
+            {result && result.issues?.length > 0 ? (
+              <ul className="space-y-2.5">
+                {result.issues.map((item, idx) => (
+                  <li
+                    key={idx}
+                    className="flex items-start gap-3 bg-white rounded-lg p-3 border border-slate-200/50"
+                  >
+                    <span className="w-5 h-5 flex-shrink-0 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center text-xs font-medium">
+                      {idx + 1}
+                    </span>
+                    <span className="text-sm text-slate-600 font-light leading-relaxed">{item}</span>
+                  </li>
                 ))}
-                <div className="pt-4 border-t border-slate-200/50">
-                  <p className="text-xs text-slate-500 font-light uppercase tracking-wider mb-2">当前动作</p>
-                  <div className="bg-white rounded-lg px-3 py-2 text-sm font-light text-slate-700 border border-slate-200/50">
-                    {exerciseName}
-                  </div>
-                </div>
-              </div>
+              </ul>
+            ) : analyzing ? (
+              <ThinkingState emoji="🤔" title="AI 正在分析动作" subtitle="🔍 检测关节角度..." />
             ) : (
-              <p className="text-sm text-slate-400 font-light text-center py-10">上传视频并分析后显示关节角度</p>
+              <p className="text-sm text-slate-400 font-light text-center py-10">上传视频并分析后显示问题</p>
             )}
           </CardContent>
         </Card>
@@ -371,6 +365,14 @@ const Correct = () => {
                     <p className="text-sm text-slate-400 font-light">暂无建议</p>
                   )}
                 </div>
+              </div>
+            ) : analyzing ? (
+              <ThinkingState emoji="🧠" title="生成评分与建议中" subtitle="📊 生成分析报告..." />
+            ) : error ? (
+              <div className="mt-6 flex flex-col items-center justify-center py-12 text-slate-400">
+                <span className="text-4xl mb-4">😕</span>
+                <p className="text-sm font-light text-red-500">分析失败，请稍后重试</p>
+                <p className="text-xs text-slate-400 font-light mt-2">可检查网络后重新上传视频</p>
               </div>
             ) : (
               <div className="mt-4 text-center py-10 text-slate-400">

@@ -1,13 +1,5 @@
 import apiClient, { USE_MOCK, mockSuccess, mockDelay } from './client';
 
-interface Comment {
-  id: number;
-  userId: number;
-  username: string;
-  content: string;
-  time: string;
-}
-
 interface Checkin {
   id: number;
   userId: number;
@@ -17,22 +9,10 @@ interface Checkin {
   images: string[];
   likes: number;
   isLiked: boolean;
-  commentCount: number;
-  comments: Comment[];
   time: string;
 }
 
 // ===== Mock 数据 =====
-let mockComments: Record<number, Comment[]> = {
-  1: [
-    { id: 1, userId: 2, username: 'Sarah', content: '太强了！', time: '1小时前' },
-    { id: 2, userId: 3, username: 'Mike', content: '向你学习！', time: '30分钟前' },
-  ],
-  2: [{ id: 3, userId: 1, username: 'Alex', content: '配速很稳！', time: '昨天' }],
-  3: [],
-};
-let nextCommentId = 4;
-
 let mockFeed: Checkin[] = [
   {
     id: 1,
@@ -43,8 +23,6 @@ let mockFeed: Checkin[] = [
     images: [],
     likes: 12,
     isLiked: false,
-    commentCount: 2,
-    comments: mockComments[1] || [],
     time: '2小时前',
   },
   {
@@ -56,8 +34,6 @@ let mockFeed: Checkin[] = [
     images: [],
     likes: 8,
     isLiked: true,
-    commentCount: 1,
-    comments: mockComments[2] || [],
     time: '昨天',
   },
   {
@@ -69,8 +45,6 @@ let mockFeed: Checkin[] = [
     images: [],
     likes: 5,
     isLiked: false,
-    commentCount: 0,
-    comments: mockComments[3] || [],
     time: '昨天',
   },
 ];
@@ -89,8 +63,6 @@ export const createCheckin = async (data: { content: string; images: string[] })
       images: data.images || [],
       likes: 0,
       isLiked: false,
-      commentCount: 0,
-      comments: [],
       time: '刚刚',
     };
     mockFeed = [newItem, ...mockFeed];
@@ -122,18 +94,18 @@ export const getUserCheckins = async (userId?: number): Promise<Checkin[]> => {
 };
 
 // ===== 4. 点赞/取消点赞 =====
-export const toggleLike = async (checkinId: number) => {
+// isLiked 为当前是否已点赞：已点赞则取消（DELETE），未点赞则点赞（POST）
+export const toggleLike = async (checkinId: number, isLiked: boolean) => {
   if (USE_MOCK) {
     await mockDelay(300);
     const item = mockFeed.find(f => f.id === checkinId);
     if (item) {
-      item.isLiked = !item.isLiked;
+      item.isLiked = !isLiked;
       item.likes += item.isLiked ? 1 : -1;
     }
     return mockSuccess(null);
   }
-  const item = mockFeed.find(f => f.id === checkinId);
-  if (item?.isLiked) {
+  if (isLiked) {
     return apiClient.delete(`/api/community/like/${checkinId}`);
   }
   return apiClient.post(`/api/community/like/${checkinId}`);
@@ -149,28 +121,6 @@ export const getLikeStatus = async (checkinId: number): Promise<boolean> => {
   return apiClient.get(`/api/community/like/status/${checkinId}`);
 };
 
-// ===== 6. 发表评论 =====
-export const addComment = async (checkinId: number, content: string) => {
-  if (USE_MOCK) {
-    await mockDelay(400);
-    const newComment: Comment = {
-      id: nextCommentId++,
-      userId: 1,
-      username: '我',
-      content,
-      time: '刚刚',
-    };
-    if (!mockComments[checkinId]) mockComments[checkinId] = [];
-    mockComments[checkinId].push(newComment);
-    const item = mockFeed.find(f => f.id === checkinId);
-    if (item) {
-      item.commentCount = (item.commentCount || 0) + 1;
-      item.comments = mockComments[checkinId];
-    }
-    return mockSuccess(newComment);
-  }
-  return apiClient.post(`/api/community/comment/${checkinId}`, { content });
-};
 // 删除打卡（管理员专用）
 export const deleteCheckin = async (checkinId: number) => {
   if (USE_MOCK) {
