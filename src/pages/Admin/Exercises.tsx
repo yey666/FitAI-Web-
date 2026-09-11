@@ -196,7 +196,12 @@ const AdminExercises = () => {
   };
 
   if (loading) {
-    return <div className="p-6 text-center text-slate-400">加载中...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center py-16">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-slate-300 border-t-slate-600" />
+        <p className="mt-3 text-sm text-slate-500 font-light">加载中...</p>
+      </div>
+    );
   }
 
   return (
@@ -204,7 +209,7 @@ const AdminExercises = () => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 tracking-tight">动作管理</h1>
-          <p className="text-sm text-slate-400">管理训练动作库</p>
+          <p className="text-sm text-slate-500">管理训练动作库</p>
         </div>
         <button
           className="px-4 py-2 bg-slate-800 text-white text-sm rounded-lg hover:bg-slate-700 transition-colors"
@@ -219,13 +224,13 @@ const AdminExercises = () => {
           <input
             type="text"
             placeholder="搜索动作名称..."
-            className="w-full px-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-slate-300 transition-colors"
+            className="w-full px-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200 transition-colors"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
         <select
-          className="px-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-slate-300 bg-white"
+          className="px-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200 bg-white"
           value={filterPart}
           onChange={(e) => setFilterPart(e.target.value)}
         >
@@ -233,7 +238,7 @@ const AdminExercises = () => {
           {bodyParts.map(p => <option key={p} value={p}>{p}</option>)}
         </select>
         <select
-          className="px-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-slate-300 bg-white"
+          className="px-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200 bg-white"
           value={filterDiff}
           onChange={(e) => setFilterDiff(e.target.value === 'all' ? 'all' : Number(e.target.value))}
         >
@@ -242,21 +247,21 @@ const AdminExercises = () => {
           <option value={2}>中级</option>
           <option value={3}>高级</option>
         </select>
-        <span className="text-xs text-slate-400 ml-auto">共 {filtered.length} 个动作</span>
+        <span className="text-xs text-slate-500 ml-auto">共 {filtered.length} 个动作</span>
       </div>
 
       {showForm && (
-        <div className="bg-white rounded-xl border border-slate-100 p-5 shadow-sm mb-4">
+        <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-md mb-4">
           <h2 className="font-medium text-slate-700 mb-3">{editing ? '编辑动作' : '新增动作'}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
-              className="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-slate-300"
+              className="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
               placeholder="动作名称 *"
               value={formData.name}
               onChange={e => setFormData({ ...formData, name: e.target.value })}
             />
             <select
-              className="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-slate-300 bg-white"
+              className="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200 bg-white"
               value={formData.bodyPart}
               onChange={e => setFormData({ ...formData, bodyPart: e.target.value })}
             >
@@ -264,7 +269,7 @@ const AdminExercises = () => {
               {bodyParts.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
             <select
-              className="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-slate-300 bg-white"
+              className="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200 bg-white"
               value={formData.difficulty}
               onChange={e => setFormData({ ...formData, difficulty: Number(e.target.value) as 1 | 2 | 3 })}
             >
@@ -275,7 +280,7 @@ const AdminExercises = () => {
             <div>
               <div className="flex items-center gap-3">
                 <button
-                  className="px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50"
+                  className="px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading}
                 >
@@ -288,7 +293,7 @@ const AdminExercises = () => {
                   className="hidden"
                   onChange={handleImageUpload}
                 />
-                <span className="text-xs text-slate-400">支持 JPG、PNG，最大 5MB</span>
+                <span className="text-xs text-slate-500">支持 JPG、PNG，最大 5MB</span>
               </div>
               {formData.imageUrl && (
                 <div className="mt-2 flex items-center gap-3">
@@ -305,28 +310,28 @@ const AdminExercises = () => {
               )}
             </div>
             <textarea
-              className="md:col-span-2 px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-slate-300 resize-none"
+              className="md:col-span-2 px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200 resize-none"
               placeholder="动作描述 *"
               rows={2}
               value={formData.description}
               onChange={e => setFormData({ ...formData, description: e.target.value })}
             />
             <textarea
-              className="md:col-span-2 px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-slate-300 resize-none"
+              className="md:col-span-2 px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200 resize-none"
               placeholder="执行步骤（每行一步）*"
               rows={4}
               value={formData.steps}
               onChange={e => setFormData({ ...formData, steps: e.target.value })}
             />
             <textarea
-              className="md:col-span-2 px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-slate-300 resize-none"
+              className="md:col-span-2 px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200 resize-none"
               placeholder="注意事项（每行一条）*"
               rows={3}
               value={formData.tips}
               onChange={e => setFormData({ ...formData, tips: e.target.value })}
             />
             <textarea
-              className="md:col-span-2 px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-slate-300 resize-none"
+              className="md:col-span-2 px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200 resize-none"
               placeholder="常见错误（每行一条）"
               rows={3}
               value={formData.commonMistakes}
@@ -341,13 +346,13 @@ const AdminExercises = () => {
               📤 保存并发布
             </button>
             <button
-              className="px-4 py-2 bg-slate-200 text-slate-600 text-sm rounded-lg hover:bg-slate-300 transition-colors"
+              className="px-4 py-2 bg-slate-200 text-slate-700 text-sm rounded-lg hover:bg-slate-300 transition-colors"
               onClick={() => handleSubmit('draft')}
             >
               📝 保存为草稿
             </button>
             <button
-              className="px-4 py-2 bg-slate-100 text-slate-400 text-sm rounded-lg hover:bg-slate-200 transition-colors"
+              className="px-4 py-2 bg-slate-100 text-slate-500 text-sm rounded-lg hover:bg-slate-200 transition-colors"
               onClick={closeForm}
             >
               取消
@@ -356,7 +361,7 @@ const AdminExercises = () => {
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm">
+      <div className="bg-white rounded-xl border border-slate-200/80 overflow-hidden shadow-md">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-slate-50">
@@ -411,7 +416,7 @@ const AdminExercises = () => {
           </table>
         </div>
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-slate-400">
+          <div className="text-center py-12 text-slate-500">
             <p className="text-sm">没有找到匹配的动作</p>
           </div>
         )}

@@ -97,7 +97,12 @@ const Admin = () => {
   };
 
   if (loading) {
-    return <div className="p-6 text-center text-slate-400">加载中...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center py-16">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-slate-300 border-t-slate-600" />
+        <p className="mt-3 text-sm text-slate-500 font-light">加载中...</p>
+      </div>
+    );
   }
 
   return (
@@ -105,7 +110,7 @@ const Admin = () => {
       {/* 页面标题 */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-slate-800 tracking-tight">数据总览</h1>
-        <p className="text-sm text-slate-400">平台运营数据实时监控</p>
+        <p className="text-sm text-slate-500">平台运营数据实时监控</p>
       </div>
 
       {/* 统计卡片 */}
@@ -116,20 +121,20 @@ const Admin = () => {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.05 }}
-            className="bg-white rounded-xl border border-slate-100 p-5 shadow-sm hover:shadow-md transition-shadow"
+            className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-md hover:shadow-lg transition-shadow duration-200"
           >
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{stat.label}</p>
-                <p className="text-2xl font-bold text-slate-800 mt-1">{stat.value}</p>
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">{stat.label}</p>
+                <p className="text-2xl font-bold text-slate-900 mt-1">{stat.value}</p>
               </div>
-              <div className="p-2 rounded-lg bg-slate-50 text-slate-600">{stat.icon}</div>
+              <div className="p-2 rounded-lg bg-slate-50 text-slate-700">{stat.icon}</div>
             </div>
             <div className="flex items-center gap-1.5 mt-3">
               <span className={`text-xs font-medium ${stat.change >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
                 {stat.change >= 0 ? '↑' : '↓'} {Math.abs(stat.change)}%
               </span>
-              <span className="text-xs text-slate-400">较上周</span>
+              <span className="text-xs text-slate-500">较上周</span>
             </div>
           </motion.div>
         ))}
@@ -138,37 +143,43 @@ const Admin = () => {
       {/* 图表区域 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
         {/* 趋势图 */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
+        <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200/80 p-5 shadow-md">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">平台趋势</p>
-              <p className="text-sm text-slate-600">近7天数据变化</p>
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">平台趋势</p>
+              <p className="text-sm text-slate-700">近7天数据变化</p>
             </div>
-            <div className="flex gap-3 text-xs text-slate-400">
+            <div className="flex gap-3 text-xs text-slate-500">
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-purple-500"/>打卡</span>
             </div>
           </div>
-          <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={trendData}>
-              <defs>
-                <linearGradient id="checkinGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.2}/>
-                  <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false}/>
-              <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false}/>
-              <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false}/>
-              <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}/>
-              <Area type="monotone" dataKey="打卡" stroke="#8b5cf6" strokeWidth={2} fill="url(#checkinGrad)"/>
-            </AreaChart>
-          </ResponsiveContainer>
+          {trendData.length === 0 ? (
+            <div className="flex items-center justify-center h-[200px] text-sm text-slate-400">
+              暂无数据
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={200}>
+              <AreaChart data={trendData}>
+                <defs>
+                  <linearGradient id="checkinGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.2}/>
+                    <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false}/>
+                <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false}/>
+                <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} allowDecimals={false}/>
+                <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}/>
+                <Area type="monotone" dataKey="打卡" stroke="#8b5cf6" strokeWidth={2} fill="url(#checkinGrad)"/>
+              </AreaChart>
+            </ResponsiveContainer>
+          )}
         </div>
 
         {/* 饼图 */}
-        <div className="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">数据分布</p>
-          <p className="text-sm text-slate-600 mb-3">平台数据占比</p>
+        <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-md">
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">数据分布</p>
+          <p className="text-sm text-slate-700 mb-3">平台数据占比</p>
           <ResponsiveContainer width="100%" height={180}>
             <PieChart>
               <Pie
@@ -203,8 +214,8 @@ const Admin = () => {
       {/* 快捷入口 + 最近活动 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-1 space-y-4">
-          <div className="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
-            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-3">快捷入口</p>
+          <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-md">
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-3">快捷入口</p>
             <div className="space-y-2">
               {[
                 { label: '用户管理', path: '/admin/users', icon: '👥', desc: '查看/管理所有用户' },
@@ -213,32 +224,32 @@ const Admin = () => {
               ].map((item) => (
                 <div
                   key={item.path}
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50/80 cursor-pointer transition-colors"
                   onClick={() => navigate(item.path)}
                 >
                   <span className="text-xl">{item.icon}</span>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-slate-700">{item.label}</p>
-                    <p className="text-xs text-slate-400">{item.desc}</p>
+                    <p className="text-xs text-slate-500">{item.desc}</p>
                   </div>
-                  <span className="text-slate-300">›</span>
+                  <span className="text-slate-500">›</span>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        <div className="lg:col-span-2 bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
+        <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200/80 p-5 shadow-md">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">最近动态</p>
-              <p className="text-sm text-slate-600">实时平台活动</p>
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">最近动态</p>
+              <p className="text-sm text-slate-700">实时平台活动</p>
             </div>
-            <span className="text-xs text-slate-400">共 {recentActivities.length} 条</span>
+            <span className="text-xs text-slate-500">共 {recentActivities.length} 条</span>
           </div>
           <div className="space-y-3">
             {recentActivities.length === 0 ? (
-              <p className="text-sm text-slate-400 text-center py-4">暂无动态</p>
+              <p className="text-sm text-slate-500 text-center py-4">暂无动态</p>
             ) : (
               recentActivities.map((item, idx) => (
                 <motion.div
@@ -248,7 +259,7 @@ const Admin = () => {
                   transition={{ delay: idx * 0.04 }}
                   className="flex items-center gap-3 pb-3 border-b border-slate-50 last:border-0 last:pb-0"
                 >
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium bg-slate-100 text-slate-600">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium bg-slate-100 text-slate-700">
                     {item.user?.[0]?.toUpperCase() || 'U'}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -256,9 +267,9 @@ const Admin = () => {
                       <span className="font-medium">{item.user}</span>
                       <span className="text-slate-500"> {item.action}</span>
                     </p>
-                    <p className="text-xs text-slate-400 truncate">{item.detail}</p>
+                    <p className="text-xs text-slate-500 truncate">{item.detail}</p>
                   </div>
-                  <span className="text-xs text-slate-300 flex-shrink-0">{item.time}</span>
+                  <span className="text-xs text-slate-500 flex-shrink-0">{item.time}</span>
                 </motion.div>
               ))
             )}

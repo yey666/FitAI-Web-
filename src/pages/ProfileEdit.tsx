@@ -129,7 +129,7 @@ const ProfileEdit = () => {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-slate-300 border-t-slate-600" />
-          <p className="mt-3 text-sm text-slate-400 font-light">加载中...</p>
+          <p className="mt-3 text-sm text-slate-500 font-light">加载中...</p>
         </div>
       </div>
     );
@@ -141,13 +141,13 @@ const ProfileEdit = () => {
       <div className="flex items-center gap-4 pb-6 border-b border-slate-200/50 mb-7">
         <button
           onClick={() => navigate('/profile')}
-          className="p-1.5 -ml-1.5 rounded-md hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600"
+          className="p-1.5 -ml-1.5 rounded-md hover:bg-slate-100 transition-all duration-150 hover:scale-110 text-slate-500 hover:text-slate-700"
         >
           {Icons.back}
         </button>
         <div className="flex-1">
           <h1 className="text-xl font-light text-slate-800 tracking-tight">编辑个人资料</h1>
-          <p className="text-sm text-slate-400 font-light mt-0.5">更新你的个人信息</p>
+          <p className="text-sm text-slate-500 font-light mt-0.5">更新你的个人信息</p>
         </div>
         <Button
           onClick={handleSubmit}
@@ -162,7 +162,7 @@ const ProfileEdit = () => {
       {/* ===== 头像 ===== */}
       <div className="flex items-center gap-6 pb-6 mb-6 border-b border-slate-200/50">
         <div className="relative flex-shrink-0">
-          <div className="w-20 h-20 rounded-full bg-slate-200 flex items-center justify-center text-slate-400 overflow-hidden">
+          <div className="w-20 h-20 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 overflow-hidden">
             {avatarPreview ? (
               <img src={avatarPreview} alt="" className="w-full h-full object-cover" />
             ) : (
@@ -171,7 +171,7 @@ const ProfileEdit = () => {
           </div>
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="absolute -bottom-0.5 -right-0.5 p-1.5 rounded-full bg-slate-700 hover:bg-slate-600 text-white transition-colors"
+            className="absolute -bottom-0.5 -right-0.5 p-1.5 rounded-full bg-slate-700 hover:bg-slate-600 text-white transition-all duration-150 hover:scale-110"
           >
             {Icons.camera}
           </button>
@@ -185,7 +185,7 @@ const ProfileEdit = () => {
         </div>
         <div>
           <p className="text-sm font-medium text-slate-700">个人头像</p>
-          <p className="text-xs text-slate-400 font-light mt-0.5">点击相机图标更换头像</p>
+          <p className="text-xs text-slate-500 font-light mt-0.5">点击相机图标更换头像</p>
         </div>
       </div>
 
@@ -193,9 +193,9 @@ const ProfileEdit = () => {
       <div className="space-y-5">
         {/* 昵称 */}
         <div>
-          <label className="text-xs text-slate-400 font-light block mb-1.5 uppercase tracking-wider">昵称</label>
+          <label className="text-xs text-slate-500 font-light block mb-1.5 uppercase tracking-wider">昵称</label>
           <Input
-            className="rounded-md border-slate-200 focus:border-slate-400 focus:ring-0 text-sm font-light"
+            className="rounded-md border-slate-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 text-sm font-light"
             value={form.nickname}
             onChange={(e) => setForm({ ...form, nickname: e.target.value })}
             placeholder="请输入昵称"
@@ -205,9 +205,9 @@ const ProfileEdit = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* 性别 */}
           <div>
-            <label className="text-xs text-slate-400 font-light block mb-1.5 uppercase tracking-wider">性别</label>
+            <label className="text-xs text-slate-500 font-light block mb-1.5 uppercase tracking-wider">性别</label>
             <select
-              className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-300 font-light"
+              className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200 font-light"
               value={form.gender}
               onChange={(e) => setForm({ ...form, gender: e.target.value })}
             >
@@ -219,9 +219,9 @@ const ProfileEdit = () => {
 
           {/* 健身目标 */}
           <div>
-            <label className="text-xs text-slate-400 font-light block mb-1.5 uppercase tracking-wider">健身目标</label>
+            <label className="text-xs text-slate-500 font-light block mb-1.5 uppercase tracking-wider">健身目标</label>
             <select
-              className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-300 font-light"
+              className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200 font-light"
               value={form.goal}
               onChange={(e) => setForm({ ...form, goal: e.target.value })}
             >
@@ -234,9 +234,9 @@ const ProfileEdit = () => {
 
         {/* 个性签名 */}
         <div>
-          <label className="text-xs text-slate-400 font-light block mb-1.5 uppercase tracking-wider">个性签名</label>
+          <label className="text-xs text-slate-500 font-light block mb-1.5 uppercase tracking-wider">个性签名</label>
           <textarea
-            className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-slate-400 transition-colors min-h-[80px] resize-none font-light placeholder:text-slate-400"
+            className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200 transition-colors min-h-[80px] resize-none font-light placeholder:text-slate-500"
             placeholder="一句话介绍自己..."
             value={form.bio}
             onChange={(e) => setForm({ ...form, bio: e.target.value })}
@@ -246,11 +246,11 @@ const ProfileEdit = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
           {/* 身高 */}
           <div>
-            <label className="text-xs text-slate-400 font-light block mb-1.5 uppercase tracking-wider">身高 (cm)</label>
+            <label className="text-xs text-slate-500 font-light block mb-1.5 uppercase tracking-wider">身高 (cm)</label>
             <Input
               type="number"
               step="0.1"
-              className="rounded-md border-slate-200 focus:border-slate-400 focus:ring-0 text-sm font-light"
+              className="rounded-md border-slate-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 text-sm font-light"
               value={form.height}
               onChange={(e) => setForm({ ...form, height: e.target.value })}
               placeholder="0"
@@ -259,11 +259,11 @@ const ProfileEdit = () => {
 
           {/* 体重 */}
           <div>
-            <label className="text-xs text-slate-400 font-light block mb-1.5 uppercase tracking-wider">体重 (kg)</label>
+            <label className="text-xs text-slate-500 font-light block mb-1.5 uppercase tracking-wider">体重 (kg)</label>
             <Input
               type="number"
               step="0.1"
-              className="rounded-md border-slate-200 focus:border-slate-400 focus:ring-0 text-sm font-light"
+              className="rounded-md border-slate-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 text-sm font-light"
               value={form.weight}
               onChange={(e) => setForm({ ...form, weight: e.target.value })}
               placeholder="0"

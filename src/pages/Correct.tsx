@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { uploadVideo, analyzeVideo, getCorrectHistory } from '@/api/correct';
+import { getExercises, type Exercise } from '@/api/exercises';
 
 // ===== 图标 =====
 const Icons = {
@@ -75,14 +76,15 @@ const ThinkingState = ({ emoji, title, subtitle }: { emoji: string; title: strin
       {title}
       <ThinkingDots />
     </p>
-    <p className="text-xs text-slate-400 font-light mt-2">{subtitle}</p>
+    <p className="text-xs text-slate-500 font-light mt-2">{subtitle}</p>
   </div>
 );
 
 const Correct = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [exerciseName, setExerciseName] = useState('深蹲');
+  const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [exerciseName, setExerciseName] = useState('');
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [fileName, setFileName] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -94,6 +96,16 @@ const Correct = () => {
 
   useEffect(() => {
     getCorrectHistory().then(setHistory).catch(console.error);
+  }, []);
+
+  // 获取动作库列表，并默认选中第一个动作
+  useEffect(() => {
+    getExercises().then((list) => {
+      setExercises(list);
+      if (list.length > 0) {
+        setExerciseName(list[0].name);
+      }
+    }).catch(console.error);
   }, []);
 
   // 卸载或更换视频时释放本地预览的 object URL
@@ -191,21 +203,21 @@ const Correct = () => {
       <div className="flex items-center justify-between pb-5 border-b border-slate-200/50">
         <div>
           <h1 className="text-xl font-light text-slate-800 tracking-tight">动作纠正</h1>
-          <p className="text-sm text-slate-400 font-light mt-0.5">上传训练视频，AI 分析动作质量</p>
+          <p className="text-sm text-slate-500 font-light mt-0.5">上传训练视频，AI 分析动作质量</p>
         </div>
         <div className="flex items-center gap-3">
           <select
-            className="text-sm border border-slate-200 rounded-md px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-300 font-light"
+            className="text-sm border border-slate-200 rounded-md px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200 font-light"
             value={exerciseName}
             onChange={(e) => setExerciseName(e.target.value)}
           >
-            <option>深蹲</option>
-            <option>卧推</option>
-            <option>硬拉</option>
+            {exercises.map((ex) => (
+              <option key={ex.id} value={ex.name}>{ex.name}</option>
+            ))}
           </select>
           <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" className="border-slate-200 text-slate-600 hover:bg-slate-100 rounded-md px-4 py-1.5 text-sm font-light flex items-center gap-1.5">
+              <Button variant="outline" className="border-slate-200 text-slate-700 hover:bg-slate-100 rounded-md px-4 py-1.5 text-sm font-light flex items-center gap-1.5">
                 {Icons.history}
                 历史记录
               </Button>
@@ -217,13 +229,13 @@ const Correct = () => {
                 </DialogHeader>
                 <div className="space-y-2 max-h-80 overflow-auto">
                   {history.length === 0 ? (
-                    <p className="text-sm text-slate-400 font-light text-center py-4">暂无纠正记录</p>
+                    <p className="text-sm text-slate-500 font-light text-center py-4">暂无纠正记录</p>
                   ) : (
                     history.map((item) => (
                       <div key={item.id} className="flex justify-between items-center bg-slate-50/60 rounded-lg p-3">
                         <div>
                           <p className="text-sm font-medium text-slate-700">{item.exerciseName}</p>
-                          <p className="text-xs text-slate-400 font-light">{item.createdAt}</p>
+                          <p className="text-xs text-slate-500 font-light">{item.createdAt}</p>
                         </div>
                         <span className={`text-sm font-medium ${getScoreColor(item.score)}`}>{item.score}分</span>
                       </div>
@@ -237,7 +249,7 @@ const Correct = () => {
       </div>
 
       {/* ===== 上传卡片 ===== */}
-      <Card className="border-0 shadow-none bg-slate-50/60 rounded-xl overflow-hidden">
+      <Card className="border border-slate-200/80 shadow-none hover:shadow-none bg-slate-50/60 rounded-xl overflow-hidden">
         <CardContent className="p-0">
           <div className="relative aspect-video bg-slate-200">
             {videoUrl ? (
@@ -249,10 +261,10 @@ const Correct = () => {
                 className="absolute inset-0 w-full h-full object-contain bg-black"
               />
             ) : (
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 pointer-events-none">
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 pointer-events-none">
                 <span className="text-6xl mb-3 opacity-30">{Icons.video}</span>
                 <p className="text-sm font-light">点击下方「上传视频」选择训练视频</p>
-                <p className="text-xs text-slate-300 font-light mt-1">支持 mp4、webm 等常见视频格式</p>
+                <p className="text-xs text-slate-500 font-light mt-1">支持 mp4、webm 等常见视频格式</p>
               </div>
             )}
 
@@ -269,7 +281,7 @@ const Correct = () => {
 
           <div className="p-5 flex items-center justify-between bg-white">
             <Button
-              className="bg-slate-700 hover:bg-slate-800 text-white rounded-lg px-5 py-2 text-sm font-normal tracking-wide transition-all duration-200 flex items-center gap-2"
+              className="bg-slate-800 hover:bg-slate-700 text-white rounded-lg px-5 py-2 text-sm font-normal tracking-wide transition-all duration-200 flex items-center gap-2"
               onClick={handleUploadClick}
               disabled={isBusy}
             >
@@ -283,7 +295,7 @@ const Correct = () => {
               className="hidden"
               onChange={handleFileChange}
             />
-            <span className="text-xs text-slate-400 font-light">{exerciseName} · 上传后自动分析</span>
+            <span className="text-xs text-slate-500 font-light">{exerciseName} · 上传后自动分析</span>
           </div>
         </CardContent>
       </Card>
@@ -291,7 +303,7 @@ const Correct = () => {
       {/* ===== 结果区 ===== */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* 问题列表 */}
-        <Card className="border-0 shadow-none bg-slate-50/60 rounded-xl">
+        <Card className="border border-slate-200/80 shadow-none hover:shadow-none bg-slate-50/60 rounded-xl">
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-4">
               {Icons.issues}
@@ -307,20 +319,20 @@ const Correct = () => {
                     <span className="w-5 h-5 flex-shrink-0 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center text-xs font-medium">
                       {idx + 1}
                     </span>
-                    <span className="text-sm text-slate-600 font-light leading-relaxed">{item}</span>
+                    <span className="text-sm text-slate-700 font-light leading-relaxed">{item}</span>
                   </li>
                 ))}
               </ul>
             ) : analyzing ? (
               <ThinkingState emoji="🤔" title="AI 正在分析动作" subtitle="🔍 检测关节角度..." />
             ) : (
-              <p className="text-sm text-slate-400 font-light text-center py-10">上传视频并分析后显示问题</p>
+              <p className="text-sm text-slate-500 font-light text-center py-10">上传视频并分析后显示问题</p>
             )}
           </CardContent>
         </Card>
 
         {/* 评分 + 建议 */}
-        <Card className="border-0 shadow-none bg-slate-50/60 rounded-xl">
+        <Card className="border border-slate-200/80 shadow-none hover:shadow-none bg-slate-50/60 rounded-xl">
           <CardContent className="p-6">
             <span className="text-xs text-slate-500 font-light uppercase tracking-wider">分析结果</span>
             {result ? (
@@ -355,27 +367,27 @@ const Correct = () => {
                   {result.suggestions?.length > 0 ? (
                     <ul className="space-y-1.5">
                       {result.suggestions.map((s, i) => (
-                        <li key={i} className="text-sm text-slate-600 font-light flex items-start gap-2">
-                          <span className="text-slate-300 mt-0.5 flex-shrink-0">{i + 1}.</span>
+                        <li key={i} className="text-sm text-slate-700 font-light flex items-start gap-2">
+                          <span className="text-slate-500 mt-0.5 flex-shrink-0">{i + 1}.</span>
                           <span>{s}</span>
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-sm text-slate-400 font-light">暂无建议</p>
+                    <p className="text-sm text-slate-500 font-light">暂无建议</p>
                   )}
                 </div>
               </div>
             ) : analyzing ? (
               <ThinkingState emoji="🧠" title="生成评分与建议中" subtitle="📊 生成分析报告..." />
             ) : error ? (
-              <div className="mt-6 flex flex-col items-center justify-center py-12 text-slate-400">
+              <div className="mt-6 flex flex-col items-center justify-center py-12 text-slate-500">
                 <span className="text-4xl mb-4">😕</span>
                 <p className="text-sm font-light text-red-500">分析失败，请稍后重试</p>
-                <p className="text-xs text-slate-400 font-light mt-2">可检查网络后重新上传视频</p>
+                <p className="text-xs text-slate-500 font-light mt-2">可检查网络后重新上传视频</p>
               </div>
             ) : (
-              <div className="mt-4 text-center py-10 text-slate-400">
+              <div className="mt-4 text-center py-10 text-slate-500">
                 <p className="text-sm font-light">上传视频后查看 AI 分析</p>
                 <p className="text-xs font-light mt-1">AI 将分析你的动作姿态并给出建议</p>
               </div>

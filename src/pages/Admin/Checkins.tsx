@@ -9,7 +9,6 @@ interface Checkin {
   content: string;
   images: string[];
   likes: number;
-  commentCount: number;
   createdAt: string;
 }
 
@@ -44,7 +43,6 @@ const AdminCheckins = () => {
         content: c.content,
         images: c.images || [],
         likes: c.likes || 0,
-        commentCount: c.commentCount || 0,
         createdAt: c.createdAt || '',
       })));
     } catch (error) {
@@ -89,18 +87,22 @@ const AdminCheckins = () => {
   };
 
   if (loading) {
-    return <div className="p-6 text-center text-slate-400">加载中...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center py-16">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-slate-300 border-t-slate-600" />
+        <p className="mt-3 text-sm text-slate-500 font-light">加载中...</p>
+      </div>
+    );
   }
 
   const totalLikes = checkins.reduce((s, c) => s + c.likes, 0);
-  const totalComments = checkins.reduce((s, c) => s + c.commentCount, 0);
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 tracking-tight">打卡管理</h1>
-          <p className="text-sm text-slate-400">管理所有用户打卡内容</p>
+          <p className="text-sm text-slate-500">管理所有用户打卡内容</p>
         </div>
         {selectedIds.length > 0 && (
           <button
@@ -112,14 +114,13 @@ const AdminCheckins = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-3 gap-3 mb-5">
+      <div className="grid grid-cols-2 gap-3 mb-5">
         {[
           { label: '总打卡', value: checkins.length, color: '#1e293b' },
           { label: '总点赞', value: totalLikes, color: '#3b82f6' },
-          { label: '总评论', value: totalComments, color: '#8b5cf6' },
         ].map((item) => (
-          <div key={item.label} className="bg-white rounded-lg border border-slate-100 px-4 py-3 shadow-sm">
-            <p className="text-xs text-slate-400">{item.label}</p>
+          <div key={item.label} className="bg-white rounded-lg border border-slate-200/80 px-4 py-3 shadow-md">
+            <p className="text-xs text-slate-500">{item.label}</p>
             <p className="text-lg font-bold text-slate-800" style={{ color: item.color }}>{item.value}</p>
           </div>
         ))}
@@ -127,19 +128,19 @@ const AdminCheckins = () => {
 
       <div className="flex flex-wrap items-center gap-3 mb-4">
         <div className="relative flex-1 min-w-[200px]">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{Icons.search}</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">{Icons.search}</span>
           <input
             type="text"
             placeholder="搜索用户名或打卡内容..."
-            className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-slate-300 transition-colors"
+            className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200 transition-colors"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <span className="text-xs text-slate-400 ml-auto">共 {filtered.length} 条打卡</span>
+        <span className="text-xs text-slate-500 ml-auto">共 {filtered.length} 条打卡</span>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm">
+      <div className="bg-white rounded-xl border border-slate-200/80 overflow-hidden shadow-md">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-slate-50">
@@ -150,7 +151,6 @@ const AdminCheckins = () => {
                 <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">用户</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">内容</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider hidden sm:table-cell">点赞</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider hidden sm:table-cell">评论</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider hidden md:table-cell">时间</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">操作</th>
               </tr>
@@ -169,16 +169,15 @@ const AdminCheckins = () => {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-medium text-slate-600">
+                      <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-medium text-slate-700">
                         {item.username?.[0]?.toUpperCase() || 'U'}
                       </div>
                       <span className="font-medium text-slate-700">{item.username}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-slate-600 max-w-xs truncate">{item.content}</td>
+                  <td className="px-4 py-3 text-slate-700 max-w-xs truncate">{item.content}</td>
                   <td className="px-4 py-3 text-slate-500 hidden sm:table-cell">{item.likes}</td>
-                  <td className="px-4 py-3 text-slate-500 hidden sm:table-cell">{item.commentCount}</td>
-                  <td className="px-4 py-3 text-slate-400 hidden md:table-cell">{item.createdAt}</td>
+                  <td className="px-4 py-3 text-slate-500 hidden md:table-cell">{item.createdAt}</td>
                   <td className="px-4 py-3">
                     <button className="text-xs text-red-500 hover:bg-red-50 px-2 py-1 rounded transition-colors" onClick={() => deleteCheckin(item.id)}>
                       删除
@@ -190,7 +189,7 @@ const AdminCheckins = () => {
           </table>
         </div>
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-slate-400">
+          <div className="text-center py-12 text-slate-500">
             <p className="text-sm">没有找到匹配的打卡</p>
           </div>
         )}

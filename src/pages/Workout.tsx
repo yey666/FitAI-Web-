@@ -321,9 +321,9 @@ const fetchData = async () => {
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <label className="text-xs font-medium text-slate-400 uppercase tracking-wider block mb-1.5">动作名称</label>
+                  <label className="text-xs font-medium text-slate-500 uppercase tracking-wider block mb-1.5">动作名称</label>
                   <select
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-300 font-light"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200 font-light"
                     value={form.exerciseName}
                     onChange={(e) => setForm({ ...form, exerciseName: e.target.value })}
                   >
@@ -335,27 +335,27 @@ const fetchData = async () => {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-medium text-slate-400 uppercase tracking-wider block mb-1.5">重量 (kg)</label>
-                    <Input type="number" placeholder="0" className="rounded-lg border-slate-200 focus:border-slate-400 focus:ring-0" value={form.weight} onChange={(e) => setForm({ ...form, weight: e.target.value })} />
+                    <label className="text-xs font-medium text-slate-500 uppercase tracking-wider block mb-1.5">重量 (kg)</label>
+                    <Input type="number" placeholder="0" className="rounded-lg border-slate-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-200" value={form.weight} onChange={(e) => setForm({ ...form, weight: e.target.value })} />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-slate-400 uppercase tracking-wider block mb-1.5">组数</label>
-                    <Input type="number" placeholder="0" className="rounded-lg border-slate-200 focus:border-slate-400 focus:ring-0" value={form.sets} onChange={(e) => setForm({ ...form, sets: e.target.value })} />
+                    <label className="text-xs font-medium text-slate-500 uppercase tracking-wider block mb-1.5">组数</label>
+                    <Input type="number" placeholder="0" className="rounded-lg border-slate-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-200" value={form.sets} onChange={(e) => setForm({ ...form, sets: e.target.value })} />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-medium text-slate-400 uppercase tracking-wider block mb-1.5">次数</label>
-                    <Input type="number" placeholder="0" className="rounded-lg border-slate-200 focus:border-slate-400 focus:ring-0" value={form.reps} onChange={(e) => setForm({ ...form, reps: e.target.value })} />
+                    <label className="text-xs font-medium text-slate-500 uppercase tracking-wider block mb-1.5">次数</label>
+                    <Input type="number" placeholder="0" className="rounded-lg border-slate-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-200" value={form.reps} onChange={(e) => setForm({ ...form, reps: e.target.value })} />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-slate-400 uppercase tracking-wider block mb-1.5">时长 (分钟)</label>
-                    <Input type="number" placeholder="0" className="rounded-lg border-slate-200 focus:border-slate-400 focus:ring-0" value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} />
+                    <label className="text-xs font-medium text-slate-500 uppercase tracking-wider block mb-1.5">时长 (分钟)</label>
+                    <Input type="number" placeholder="0" className="rounded-lg border-slate-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-200" value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} />
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-slate-400 uppercase tracking-wider block mb-1.5">日期</label>
-                  <Input type="date" className="rounded-lg border-slate-200 focus:border-slate-400 focus:ring-0" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
+                  <label className="text-xs font-medium text-slate-500 uppercase tracking-wider block mb-1.5">日期</label>
+                  <Input type="date" className="rounded-lg border-slate-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-200" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
                 </div>
                 <Button onClick={handleSubmit} className="w-full bg-slate-800 hover:bg-slate-700 text-white">
                   {editingId ? '更新记录' : '保存记录'}
@@ -368,22 +368,22 @@ const fetchData = async () => {
 
       {/* ===== 统计概览 ===== */}
       <div className="grid grid-cols-3 gap-3">
-        <Card className="border-0 shadow-sm bg-white">
-          <CardContent className="p-4 text-center">
+        <Card>
+          <CardContent className="p-6 text-center">
             <p className="stat-label">训练次数</p>
             <p className="stat-number mt-0.5">{totalWorkouts}</p>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-sm bg-white">
-          <CardContent className="p-4 text-center">
+        <Card>
+          <CardContent className="p-6 text-center">
             <p className="stat-label">总组数</p>
             <p className="stat-number mt-0.5">{totalSets}</p>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-sm bg-white">
-          <CardContent className="p-4 text-center">
+        <Card>
+          <CardContent className="p-6 text-center">
             <p className="stat-label">总容量</p>
-            <p className="stat-number mt-0.5">{totalVolume} <span className="text-sm font-light text-slate-300">kg</span></p>
+            <p className="stat-number mt-0.5">{totalVolume} <span className="text-sm font-light text-slate-500">kg</span></p>
           </CardContent>
         </Card>
       </div>
@@ -392,13 +392,13 @@ const fetchData = async () => {
       <div>
         <div className="flex items-center gap-2 mb-3">
           {Icons.calendar}
-          <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+          <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
             {new Date().getFullYear()}年{new Date().getMonth() + 1}月 训练日历
           </span>
-          <span className="text-xs text-slate-300 font-light ml-auto">点击日期查看记录</span>
+          <span className="text-xs text-slate-500 font-light ml-auto">点击日期查看记录</span>
         </div>
-        <Card className="border-0 shadow-sm bg-white">
-          <CardContent className="p-4">
+        <Card>
+          <CardContent className="p-6">
             <ReactECharts
               option={getCalendarOptions()}
               style={{ height: '110px', width: '100%' }}
@@ -412,13 +412,13 @@ const fetchData = async () => {
       {/* ===== 历史记录 ===== */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xs font-medium text-slate-400 uppercase tracking-wider">历史记录</h2>
-          <span className="text-xs text-slate-300 font-light">共 {records.length} 条</span>
+          <h2 className="text-xs font-medium text-slate-500 uppercase tracking-wider">历史记录</h2>
+          <span className="text-xs text-slate-500 font-light">共 {records.length} 条</span>
         </div>
-        <Card className="border-0 shadow-sm bg-white">
+        <Card>
           <CardContent className="p-0 divide-y divide-slate-100/60">
             {records.length === 0 ? (
-              <p className="text-sm text-slate-400 font-light text-center py-8">暂无训练记录</p>
+              <p className="text-sm text-slate-500 font-light text-center py-8">暂无训练记录</p>
             ) : (
               records.map((record, idx) => (
                 <motion.div
@@ -426,7 +426,7 @@ const fetchData = async () => {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2, delay: idx * 0.03 }}
-                  className="flex items-center justify-between px-4 py-3"
+                  className="flex items-center justify-between px-4 py-3 hover:bg-slate-50/80 transition-colors"
                 >
                   <div className="flex items-center gap-4 min-w-0">
                     <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xs font-light flex-shrink-0">
@@ -434,19 +434,19 @@ const fetchData = async () => {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-slate-700">{record.exerciseName}</p>
-                      <p className="text-xs text-slate-400 font-light">
+                      <p className="text-xs text-slate-500 font-light">
                         {record.weight}kg × {record.sets}组 × {record.reps}次 · {record.duration}分钟
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className="text-xs text-slate-300 font-light">{record.workoutDate}</span>
+                    <span className="text-xs text-slate-500 font-light">{record.workoutDate}</span>
                     {shouldShowAdminActions() && (
   <>
-    <button onClick={() => handleEdit(record)} className="p-1 rounded hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600">
+    <button onClick={() => handleEdit(record)} className="p-1 rounded hover:bg-slate-100 transition-all duration-150 hover:scale-110 text-slate-500 hover:text-slate-700">
       {Icons.edit}
     </button>
-    <button onClick={() => handleDelete(record.id)} className="p-1 rounded hover:bg-slate-100 transition-colors text-slate-400 hover:text-red-500">
+    <button onClick={() => handleDelete(record.id)} className="p-1 rounded hover:bg-slate-100 transition-all duration-150 hover:scale-110 text-slate-500 hover:text-red-500">
       {Icons.delete}
     </button>
   </>
@@ -468,18 +468,18 @@ const fetchData = async () => {
             </DialogHeader>
             <div className="py-2">
               {dayRecords.length === 0 ? (
-                <p className="text-sm text-slate-400 font-light text-center py-6">当天没有训练记录</p>
+                <p className="text-sm text-slate-500 font-light text-center py-6">当天没有训练记录</p>
               ) : (
                 <div className="space-y-3">
                   {dayRecords.map((r, idx) => (
                     <div key={idx} className="bg-slate-50 rounded-lg p-3 flex justify-between items-center">
                       <div>
                         <p className="text-sm font-medium text-slate-700">{r.exerciseName}</p>
-                        <p className="text-xs text-slate-400 font-light">
+                        <p className="text-xs text-slate-500 font-light">
                           {r.weight}kg × {r.sets}组 × {r.reps}次
                         </p>
                       </div>
-                      <span className="text-xs text-slate-300 font-light">{r.duration}分钟</span>
+                      <span className="text-xs text-slate-500 font-light">{r.duration}分钟</span>
                     </div>
                   ))}
                 </div>

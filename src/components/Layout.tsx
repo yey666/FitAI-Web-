@@ -14,7 +14,7 @@ const Layout = () => {
       >
         <Outlet />
       </motion.main>
-      <footer className="border-t border-slate-200/50 py-4 text-center text-xs text-slate-400 font-light">
+      <footer className="border-t border-slate-200/50 py-4 text-center text-xs text-slate-500 font-light">
         © 2026 FitAI. All rights reserved.
       </footer>
     </div>

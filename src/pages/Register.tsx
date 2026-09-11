@@ -85,11 +85,11 @@ const Register = () => {
 
   return (
     <div className="min-h-screen bg-slate-50/30 flex items-center justify-center px-4">
-      <Card className="w-full max-w-sm border-0 shadow-sm bg-white">
+      <Card className="w-full max-w-sm">
         <CardHeader className="text-center pb-4">
           <div className="flex justify-center mb-3 text-slate-800">{Icons.logo}</div>
           <CardTitle className="text-xl font-light text-slate-800 tracking-tight">注册 FitAI</CardTitle>
-          <p className="text-sm text-slate-400 font-light mt-1">创建账号，开始你的训练计划</p>
+          <p className="text-sm text-slate-500 font-light mt-1">创建账号，开始你的训练计划</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -99,33 +99,33 @@ const Register = () => {
               </div>
             )}
             <div className="relative">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{Icons.user}</div>
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">{Icons.user}</div>
               <Input
                 type="text"
                 placeholder="用户名（至少 3 位）"
-                className="pl-10 rounded-lg border-slate-200 focus:border-slate-400 focus:ring-0 text-sm font-light h-11"
+                className="pl-10 rounded-lg border-slate-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 text-sm font-light h-11"
                 value={username}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
                 required
               />
             </div>
             <div className="relative">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{Icons.mail}</div>
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">{Icons.mail}</div>
               <Input
                 type="email"
                 placeholder="邮箱"
-                className="pl-10 rounded-lg border-slate-200 focus:border-slate-400 focus:ring-0 text-sm font-light h-11"
+                className="pl-10 rounded-lg border-slate-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 text-sm font-light h-11"
                 value={email}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                 required
               />
             </div>
             <div className="relative">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{Icons.lock}</div>
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">{Icons.lock}</div>
               <Input
                 type="password"
                 placeholder="密码（至少 6 位）"
-                className="pl-10 rounded-lg border-slate-200 focus:border-slate-400 focus:ring-0 text-sm font-light h-11"
+                className="pl-10 rounded-lg border-slate-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 text-sm font-light h-11"
                 value={password}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                 required
@@ -133,11 +133,11 @@ const Register = () => {
               />
             </div>
             <div className="relative">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{Icons.lock}</div>
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">{Icons.lock}</div>
               <Input
                 type="password"
                 placeholder="确认密码"
-                className="pl-10 rounded-lg border-slate-200 focus:border-slate-400 focus:ring-0 text-sm font-light h-11"
+                className="pl-10 rounded-lg border-slate-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 text-sm font-light h-11"
                 value={confirmPassword}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
                 required
@@ -150,9 +150,9 @@ const Register = () => {
             >
               {loading ? '注册中...' : '注册'}
             </Button>
-            <p className="text-center text-sm text-slate-400 font-light">
+            <p className="text-center text-sm text-slate-500 font-light">
               已有账号？{' '}
-              <Link to="/login" className="text-slate-600 hover:text-slate-800 transition-colors font-medium">
+              <Link to="/login" className="text-slate-700 hover:text-slate-800 transition-colors font-medium">
                 去登录
               </Link>
             </p>

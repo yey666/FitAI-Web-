@@ -142,7 +142,7 @@ const Exercises = () => {
           <h1 className="page-title">动作库</h1>
           <p className="page-subtitle">浏览标准训练动作，学习正确姿势</p>
         </div>
-        <div className="text-sm text-slate-400 font-light">
+        <div className="text-sm text-slate-500 font-light">
           共 {filteredExercises.length} 个动作
         </div>
       </div>
@@ -150,13 +150,13 @@ const Exercises = () => {
       {/* ===== 搜索 + 筛选 ===== */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
             {Icons.search}
           </div>
           <input
             type="text"
             placeholder="搜索动作名称、部位..."
-            className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 bg-white text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-300 transition-colors font-light placeholder:text-slate-400"
+            className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 bg-white text-sm text-slate-700 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200 transition-colors font-light placeholder:text-slate-500"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -181,7 +181,7 @@ const Exercises = () => {
       {/* ===== 动作卡片网格 ===== */}
       {filteredExercises.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-sm text-slate-400 font-light">没有找到匹配的动作</p>
+          <p className="text-sm text-slate-500 font-light">没有找到匹配的动作</p>
           <button
             className="mt-2 text-sm text-slate-500 hover:text-slate-700 underline font-light"
             onClick={() => { setSearchQuery(''); setActiveTab('全部'); }}
@@ -202,7 +202,7 @@ const Exercises = () => {
                 className="cursor-pointer"
                 onClick={() => handleCardClick(exercise.id)}
               >
-                <Card className="border-0 shadow-sm bg-white rounded-lg overflow-hidden hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
+                <Card className="bg-white rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
                   {/* 图片区 */}
                   <div className="aspect-[4/3] bg-slate-100 overflow-hidden relative">
                     {exercise.imageUrl ? (
@@ -212,7 +212,7 @@ const Exercises = () => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200/50 flex items-center justify-center text-5xl text-slate-300">
+                      <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200/50 flex items-center justify-center text-5xl text-slate-500">
                         💪
                       </div>
                     )}
@@ -221,11 +221,11 @@ const Exercises = () => {
                     </div>
                   </div>
 
-                  <CardContent className="p-4">
+                  <CardContent className="p-6">
                     <div className="flex items-start justify-between">
                       <div>
                         <h3 className="text-sm font-medium text-slate-700">{exercise.name}</h3>
-                        <p className="text-xs text-slate-400 font-light mt-0.5 line-clamp-1">{exercise.description}</p>
+                        <p className="text-xs text-slate-500 font-light mt-0.5 line-clamp-1">{exercise.description}</p>
                       </div>
                       <span className={`text-[10px] px-2 py-0.5 rounded-full ${diff.color} font-light flex-shrink-0 ml-2`}>
                         {diff.label}
@@ -258,7 +258,7 @@ const Exercises = () => {
                   {selectedExercise.imageUrl ? (
                     <img src={selectedExercise.imageUrl} alt={selectedExercise.name} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200/50 flex items-center justify-center text-6xl text-slate-300">
+                    <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200/50 flex items-center justify-center text-6xl text-slate-500">
                       💪
                     </div>
                   )}
@@ -276,13 +276,13 @@ const Exercises = () => {
                 </div>
 
                 {/* 描述 */}
-                <p className="text-sm text-slate-600 font-light leading-relaxed">{selectedExercise.description}</p>
+                <p className="text-sm text-slate-700 font-light leading-relaxed">{selectedExercise.description}</p>
 
                 {/* 步骤 */}
                 {selectedExercise.steps && selectedExercise.steps.length > 0 && (
                   <div>
-                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">执行步骤</p>
-                    <ol className="list-decimal list-inside space-y-1 text-sm text-slate-600 font-light">
+                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">执行步骤</p>
+                    <ol className="list-decimal list-inside space-y-1 text-sm text-slate-700 font-light">
                       {selectedExercise.steps.map((step, idx) => (
                         <li key={idx}>{step}</li>
                       ))}
@@ -293,8 +293,8 @@ const Exercises = () => {
                 {/* 注意事项 */}
                 {selectedExercise.tips && selectedExercise.tips.length > 0 && (
                   <div>
-                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">注意事项</p>
-                    <ul className="list-disc list-inside space-y-1 text-sm text-slate-600 font-light">
+                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">注意事项</p>
+                    <ul className="list-disc list-inside space-y-1 text-sm text-slate-700 font-light">
                       {selectedExercise.tips.map((tip, idx) => (
                         <li key={idx}>{tip}</li>
                       ))}
@@ -305,7 +305,7 @@ const Exercises = () => {
                 {/* 常见错误 */}
                 {selectedExercise.commonMistakes && selectedExercise.commonMistakes.length > 0 && (
                   <div>
-                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">常见错误</p>
+                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">常见错误</p>
                     <ul className="list-disc list-inside space-y-1 text-sm text-amber-600 font-light">
                       {selectedExercise.commonMistakes.map((mistake, idx) => (
                         <li key={idx}>{mistake}</li>
@@ -315,7 +315,7 @@ const Exercises = () => {
                 )}
               </div>
             ) : (
-              <p className="text-center text-sm text-slate-400 font-light py-8">加载失败，请重试</p>
+              <p className="text-center text-sm text-slate-500 font-light py-8">加载失败，请重试</p>
             )}
           </div>
         </DialogContent>

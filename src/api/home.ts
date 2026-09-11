@@ -121,12 +121,20 @@ export const getRecentActivities = async (): Promise<Activity[]> => {
 export const getWeeklyTrend = async (): Promise<WeeklyData[]> => {
   if (USE_MOCK) { await mockDelay(300); return mockWeeklyData; }
   try {
-    const res = await apiClient.get('/api/workout/weekly-count');
-    const days = res?.data?.days || res?.days || res || [];
+    const res: any = await apiClient.get('/api/workout/weekly-count');
+    // 后端当前仅返回本周总次数（数字），无逐日明细，此时返回空数组
+    // 兼容后续可能返回 { days: [...] } / [{...}] 的情况
+    const days = Array.isArray(res)
+      ? res
+      : Array.isArray(res?.days)
+        ? res.days
+        : Array.isArray(res?.data?.days)
+          ? res.data.days
+          : [];
     return days.map((item: any) => ({
       day: item.day || '一',
-      count: item.count || 0,
-      duration: item.duration || 0,
+      count: Number(item.count) || 0,
+      duration: Number(item.duration) || 0,
     }));
   } catch (error) {
     console.error('获取周趋势失败:', error);
@@ -142,8 +150,49 @@ export const getWeeklyCount = async (): Promise<WeeklyCount> => {
     await mockDelay(300);
     return { total: 9, days: mockWeeklyData };
   }
-  return apiClient.get('/api/workout/weekly-count');
+  try {
+    const res: any = await apiClient.get('/api/workout/weekly-count');
+    return normalizeWeeklyCount(res);
+  } catch (error) {
+    console.error('获取本周训练次数失败:', error);
+    return { total: 0, days: [] };
+  }
 };
+
+// 兼容后端返回的不同结构：
+// - 数字（本周总次数）：{ data: 1 }
+// - 对象：{ total, days } / { total, list } / { count }
+// - 数组（逐日数据）
+function normalizeWeeklyCount(res: any): WeeklyCount {
+  if (res == null) return { total: 0, days: [] };
+  // 数字 → 后端只返回本周总次数，无逐日明细
+  if (typeof res === 'number') {
+    return { total: res, days: [] };
+  }
+  // 数组 → 逐日数据，求和得到总次数
+  if (Array.isArray(res)) {
+    const days = res.map((item: any) => ({
+      day: item.day || '一',
+      count: Number(item.count) || 0,
+      duration: Number(item.duration) || 0,
+    }));
+    return { total: days.reduce((sum, d) => sum + d.count, 0), days };
+  }
+  // 对象 → 从 total / count 取总数，从 days / list / data 取逐日明细
+  if (typeof res === 'object') {
+    const total = Number(res?.total ?? res?.count ?? 0);
+    const rawDays = res?.days ?? res?.list ?? res?.data;
+    const days = Array.isArray(rawDays)
+      ? rawDays.map((item: any) => ({
+          day: item.day || '一',
+          count: Number(item.count) || 0,
+          duration: Number(item.duration) || 0,
+        }))
+      : [];
+    return { total, days };
+  }
+  return { total: 0, days: [] };
+}
 
 // ============================================================
 //  5. 本周进度
@@ -161,7 +210,22 @@ export const getWeeklyProgress = async (): Promise<WeeklyProgressData> => {
 // ============================================================
 export const getTodayRecommendation = async (): Promise<Recommendation | null> => {
   if (USE_MOCK) { await mockDelay(200); return mockRecommendation; }
-  return apiClient.get('/api/exercises/recommend');
+  try {
+    const res: any = await apiClient.get('/api/exercises/recommend');
+    const raw = res?.data || res;
+    const item = Array.isArray(raw) ? raw[0] : raw;
+    if (!item) return null;
+    return {
+      id: item.id,
+      name: item.name,
+      target: item.bodyPart || item.target || '未分类',
+      difficulty: item.difficulty === 1 ? '初级' : item.difficulty === 2 ? '中级' : '高级',
+      description: item.description || '',
+    };
+  } catch (error) {
+    console.error('获取今日推荐失败:', error);
+    return null;
+  }
 };
 
 // ============================================================

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/useAuthStore';
-import { getStats, getRecentActivities, getWeeklyTrend, getTodayRecommendation } from '@/api/home';
+import { getStats, getRecentActivities, getWeeklyTrend, getWeeklyCount, getTodayRecommendation } from '@/api/home';
 import { motion } from 'framer-motion';
 
 // ===== 图标 =====
@@ -108,21 +108,24 @@ const Home = () => {
   });
   const [activities, setActivities] = useState<Activity[]>([]);
   const [weeklyData, setWeeklyData] = useState<WeeklyData[]>([]);
+  const [weeklyTotal, setWeeklyTotal] = useState(0);
   const [recommendation, setRecommendation] = useState<Recommendation | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [statsData, activitiesData, weeklyData, recData] = await Promise.all([
+        const [statsData, activitiesData, weeklyData, weeklyCountData, recData] = await Promise.all([
           getStats(),
           getRecentActivities(),
           getWeeklyTrend(),
+          getWeeklyCount(),
           getTodayRecommendation(),
         ]);
         setStats(statsData);
         setActivities(activitiesData);
         setWeeklyData(weeklyData);
+        setWeeklyTotal(weeklyCountData?.total ?? 0);
         setRecommendation(recData);
       } catch (error) {
         console.error('加载首页数据失败:', error);
@@ -143,7 +146,6 @@ const Home = () => {
     return '夜深了';
   };
 
-  const weeklyTotal = weeklyData.reduce((sum, d) => sum + d.count, 0);
   const weeklyGoal = 10;
   const progressPercent = Math.min(Math.round((weeklyTotal / weeklyGoal) * 100), 100);
 
@@ -186,9 +188,9 @@ const Home = () => {
           <h1 className="text-2xl font-light text-slate-800 tracking-tight">
             {getGreeting()}，{user?.username || '朋友'}
           </h1>
-          <p className="text-sm text-slate-400 font-light mt-0.5">保持运动，遇见更好的自己</p>
+          <p className="text-sm text-slate-500 font-light mt-0.5">保持运动，遇见更好的自己</p>
         </div>
-        <div className="flex items-center gap-2 text-xs text-slate-400 font-light">
+        <div className="flex items-center gap-2 text-xs text-slate-500 font-light">
           <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400" />
           本周进度 {progressPercent}%
         </div>
@@ -203,16 +205,16 @@ const Home = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: idx * 0.05 }}
           >
-            <Card className="border-0 shadow-sm bg-white">
-              <CardContent className="p-4">
+            <Card>
+              <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="stat-label">{stat.label}</p>
                     <p className="stat-number mt-0.5">
-                      {stat.value} <span className="text-sm font-light text-slate-300">{stat.unit}</span>
+                      {stat.value} <span className="text-sm font-light text-slate-500">{stat.unit}</span>
                     </p>
                   </div>
-                  <div className="p-1.5 rounded-lg bg-slate-50 text-slate-400">{stat.icon}</div>
+                  <div className="p-1.5 rounded-lg bg-slate-50 text-slate-500">{stat.icon}</div>
                 </div>
               </CardContent>
             </Card>
@@ -222,27 +224,33 @@ const Home = () => {
 
       {/* ===== 周趋势 + 今日推荐 ===== */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="md:col-span-2 border-0 shadow-sm bg-white">
+        <Card className="md:col-span-2">
           <CardContent className="p-5">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2 text-slate-400">
+              <div className="flex items-center gap-2 text-slate-500">
                 {Icons.chart}
                 <span className="text-xs font-medium uppercase tracking-wider">本周训练</span>
               </div>
-              <span className="text-xs text-slate-400 font-light">共 {weeklyTotal} 次</span>
+              <span className="text-xs text-slate-500 font-light">共 {weeklyTotal} 次</span>
             </div>
-            <div className="flex items-end justify-between h-20 gap-1.5">
-              {weeklyData.map((item, idx) => {
-                const height = weeklyTotal > 0 ? (item.count / Math.max(...weeklyData.map(d => d.count), 1)) * 100 : 0;
-                return (
-                  <div key={idx} className="flex-1 flex flex-col items-center gap-1">
-                    <div className="w-full max-w-8 bg-slate-300 rounded-sm transition-all duration-500" style={{ height: `${Math.max(height * 0.8, 4)}%` }} />
-                    <span className="text-[10px] text-slate-400 font-light">{item.day}</span>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="flex justify-between mt-2.5 text-[10px] text-slate-300 font-light">
+            {weeklyData.length > 0 ? (
+              <div className="flex items-end justify-between h-20 gap-1.5">
+                {weeklyData.map((item, idx) => {
+                  const height = weeklyTotal > 0 ? (item.count / Math.max(...weeklyData.map(d => d.count), 1)) * 100 : 0;
+                  return (
+                    <div key={idx} className="flex-1 flex flex-col items-center gap-1">
+                      <div className="w-full max-w-8 bg-slate-300 rounded-sm transition-all duration-500" style={{ height: `${Math.max(height * 0.8, 4)}%` }} />
+                      <span className="text-[10px] text-slate-500 font-light">{item.day}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-20 rounded-lg bg-slate-50 text-sm text-slate-400 font-light">
+                本周已完成 {weeklyTotal} 次训练
+              </div>
+            )}
+            <div className="flex justify-between mt-2.5 text-[10px] text-slate-500 font-light">
               <span>目标 {weeklyGoal} 次</span>
               <span>{progressPercent}%</span>
             </div>
@@ -252,26 +260,26 @@ const Home = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm bg-white">
+        <Card>
           <CardContent className="p-5">
-            <div className="flex items-center gap-2 mb-3 text-slate-400">
+            <div className="flex items-center gap-2 mb-3 text-slate-500">
               <span className="text-sm">{Icons.sparkles}</span>
               <span className="text-xs font-medium uppercase tracking-wider">今日推荐</span>
             </div>
             {recommendation ? (
               <div>
                 <p className="text-sm font-medium text-slate-700">{recommendation.name}</p>
-                <p className="text-xs text-slate-400 font-light mt-0.5">{recommendation.target}</p>
-                <p className="text-xs text-slate-400 font-light mt-1 line-clamp-2">{recommendation.description}</p>
+                <p className="text-xs text-slate-500 font-light mt-0.5">{recommendation.target}</p>
+                <p className="text-xs text-slate-500 font-light mt-1 line-clamp-2">{recommendation.description}</p>
                 <button
                   onClick={() => navigate('/exercises')}
-                  className="mt-2.5 text-xs text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-0.5"
+                  className="mt-2.5 text-xs text-slate-500 hover:text-slate-700 transition-colors flex items-center gap-0.5"
                 >
                   查看详情 {Icons.arrow}
                 </button>
               </div>
             ) : (
-              <p className="text-sm text-slate-400 font-light">暂无推荐</p>
+              <p className="text-sm text-slate-500 font-light">暂无推荐</p>
             )}
           </CardContent>
         </Card>
@@ -285,7 +293,7 @@ const Home = () => {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.1 + idx * 0.05 }}
-            className="bg-slate-800 hover:bg-slate-700 rounded-lg p-4 text-white cursor-pointer transition-all duration-200 hover:shadow-md flex items-center gap-3"
+            className="bg-slate-800 hover:bg-slate-700 rounded-lg p-4 text-white cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1 flex items-center gap-3"
             onClick={action.onClick}
           >
             <div className="p-1.5 bg-white/10 rounded-lg">{action.icon}</div>
@@ -301,29 +309,29 @@ const Home = () => {
       {/* ===== 最近动态 ===== */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xs font-medium text-slate-400 uppercase tracking-wider">最近动态</h2>
+          <h2 className="text-xs font-medium text-slate-500 uppercase tracking-wider">最近动态</h2>
        <span 
-        className="text-xs text-slate-300 font-light cursor-pointer hover:text-slate-500 transition-colors flex items-center gap-0.5"
+        className="text-xs text-slate-500 font-light cursor-pointer hover:text-slate-500 transition-colors flex items-center gap-0.5"
   onClick={() => navigate('/community')}
 >
          查看全部 {Icons.arrow}
         </span>
         </div>
-        <Card className="border-0 shadow-sm bg-white">
+        <Card>
           <CardContent className="p-0 divide-y divide-slate-100/60">
             {activities.length === 0 ? (
-              <p className="text-sm text-slate-400 font-light text-center py-8">暂无动态</p>
+              <p className="text-sm text-slate-500 font-light text-center py-8">暂无动态</p>
             ) : (
               activities.slice(0, 5).map((activity) => (
-                <div key={activity.id} className="flex items-center justify-between px-4 py-3">
+                <div key={activity.id} className="flex items-center justify-between px-4 py-3 hover:bg-slate-50/80 transition-colors">
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className="text-xs text-slate-400">{Icons.calendar}</span>
-                    <span className="text-sm text-slate-600 font-light truncate">{activity.title}</span>
-                    <span className="text-xs text-slate-400 font-light truncate hidden sm:inline">{activity.description}</span>
+                    <span className="text-xs text-slate-500">{Icons.calendar}</span>
+                    <span className="text-sm text-slate-700 font-light truncate">{activity.title}</span>
+                    <span className="text-xs text-slate-500 font-light truncate hidden sm:inline">{activity.description}</span>
                   </div>
                   <div className="flex items-center gap-3 flex-shrink-0">
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-light">{activity.type}</span>
-                    <span className="text-xs text-slate-300 font-light">{activity.time}</span>
+                    <span className="text-xs text-slate-500 font-light">{activity.time}</span>
                   </div>
                 </div>
               ))

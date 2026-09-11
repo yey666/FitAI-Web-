@@ -78,7 +78,8 @@ export const getAdminTrend = async (days: number = 7): Promise<TrendData[]> => {
       { date: '2026-07-07', count: 1 },
     ];
   }
-  return apiClient.get('/api/admin/trend', { params: { days } });
+  const data = await apiClient.get('/api/admin/trend', { params: { days } });
+  return Array.isArray(data) ? data : [];
 };
 
 // ============================================================

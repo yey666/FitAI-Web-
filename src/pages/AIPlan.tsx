@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { generatePlan, getPlanHistory, savePlan } from '@/api/ai';
+import { generatePlan, getPlanHistory } from '@/api/ai';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,13 +20,6 @@ const Icons = {
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="10" />
       <polyline points="12 6 12 12 16 14" />
-    </svg>
-  ),
-  save: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-      <polyline points="17 21 17 13 7 13 7 21" />
-      <polyline points="7 3 7 8 15 8" />
     </svg>
   ),
   refresh: (
@@ -72,11 +65,6 @@ const Icons = {
       <path d="M8 18h.01" />
       <path d="M12 18h.01" />
       <path d="M16 18h.01" />
-    </svg>
-  ),
-  savedBadge: (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="20 6 9 17 4 12" />
     </svg>
   ),
   expand: (
@@ -155,9 +143,6 @@ const AIPlan = () => {
   const [history, setHistory] = useState<PlanHistory[]>([]);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-  const [saveLoading, setSaveLoading] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
   const [expandedHistoryId, setExpandedHistoryId] = useState<number | null>(null);
 
   const goalOptions = ['增肌', '减脂', '塑形'];
@@ -174,8 +159,6 @@ const AIPlan = () => {
     setLoading(true);
     setError(null);
     setPlan(null);
-    setSaveSuccess(false);
-    setIsSaved(false);
     const params = {
       goal: form.goal,
       venue: form.venue,
@@ -187,38 +170,12 @@ const AIPlan = () => {
       const data = await generatePlan(params);
       console.log('[生成计划] 响应数据:', data);
       setPlan(data.content);
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 2500);
       const newHistory = await getPlanHistory();
       setHistory(newHistory);
     } catch (err: any) {
       setError(err?.message || '生成失败，请重试');
     } finally {
       setLoading(false);
-    }
-  };
-
-  // ===== 保存计划 =====
-  const handleSave = async () => {
-    if (!plan) return;
-    setSaveLoading(true);
-    try {
-      await savePlan({
-        goal: form.goal,
-        content: plan,
-        frequency: form.frequency,
-         experience: form.level,
-        venue: form.venue,
-      });
-      setIsSaved(true);
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 2500);
-      const newHistory = await getPlanHistory();
-      setHistory(newHistory);
-    } catch (err: any) {
-      setError(err?.message || '保存失败，请重试');
-    } finally {
-      setSaveLoading(false);
     }
   };
 
@@ -240,7 +197,7 @@ const AIPlan = () => {
                   className={`py-2.5 text-sm rounded-lg transition-all font-light ${
                     form.goal === opt
                       ? 'bg-slate-800 text-white scale-[1.02] shadow-sm'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                   }`}
                   onClick={() => setForm({ ...form, goal: opt })}
                 >
@@ -261,7 +218,7 @@ const AIPlan = () => {
                   className={`py-2.5 text-sm rounded-lg transition-all font-light ${
                     form.venue === opt
                       ? 'bg-slate-800 text-white scale-[1.02] shadow-sm'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                   }`}
                   onClick={() => setForm({ ...form, venue: opt })}
                 >
@@ -282,7 +239,7 @@ const AIPlan = () => {
                   className={`py-2.5 text-sm rounded-lg transition-all font-light ${
                     form.level === opt
                       ? 'bg-slate-800 text-white scale-[1.02] shadow-sm'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                   }`}
                   onClick={() => setForm({ ...form, level: opt })}
                 >
@@ -303,7 +260,7 @@ const AIPlan = () => {
                   className={`py-2.5 text-sm rounded-lg transition-all font-light ${
                     form.frequency === num
                       ? 'bg-slate-800 text-white scale-[1.02] shadow-sm'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                   }`}
                   onClick={() => setForm({ ...form, frequency: num })}
                 >
@@ -331,7 +288,7 @@ const AIPlan = () => {
         </div>
         <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" className="border-slate-200 text-slate-600 hover:bg-slate-50">
+            <Button variant="outline" className="border-slate-200 text-slate-700 hover:bg-slate-50">
               {Icons.history}
               历史计划
             </Button>
@@ -343,21 +300,21 @@ const AIPlan = () => {
               </DialogHeader>
               <div className="space-y-3">
                 {history.length === 0 ? (
-                  <p className="text-sm text-slate-400 font-light text-center py-4">暂无历史计划</p>
+                  <p className="text-sm text-slate-500 font-light text-center py-4">暂无历史计划</p>
                 ) : (
                   history.map(item => {
                     const isExpanded = expandedHistoryId === item.id;
                     return (
                       <div key={item.id} className="bg-slate-50 rounded-xl border border-slate-100 overflow-hidden">
                         <div
-                          className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-100/50 transition-colors"
+                          className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50/80 transition-colors"
                           onClick={() => toggleHistoryExpand(item.id)}
                         >
                           <div>
                             <p className="text-sm font-medium text-slate-700">{item.goal} 计划</p>
-                            <p className="text-xs text-slate-400 font-light">{item.createdAt}</p>
+                            <p className="text-xs text-slate-500 font-light">{item.createdAt}</p>
                           </div>
-                          <div className="flex items-center gap-2 text-xs text-slate-400 font-light">
+                          <div className="flex items-center gap-2 text-xs text-slate-500 font-light">
                             {isExpanded ? '收起' : '展开'}
                             {isExpanded ? Icons.collapse : Icons.expand}
                           </div>
@@ -383,7 +340,7 @@ const AIPlan = () => {
       <div className="flex gap-6">
         {/* ===== 左栏：步骤式表单 ===== */}
         <div className="w-[540px] h-[647px] flex-shrink-0">
-          <Card className="border-0 shadow-sm bg-white h-full">
+          <Card className="h-full">
             <CardContent className="p-6 flex flex-col h-full">
               {/* AI 打招呼 */}
               <div className="mb-4 pb-4 border-b border-slate-200/50">
@@ -393,17 +350,17 @@ const AIPlan = () => {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-slate-700">AI 教练</p>
-                    <p className="text-xs text-slate-400 font-light">告诉我你的情况</p>
+                    <p className="text-xs text-slate-500 font-light">告诉我你的情况</p>
                   </div>
                 </div>
-                <p className="text-sm text-slate-600 font-light mt-2 leading-relaxed">
+                <p className="text-sm text-slate-700 font-light mt-2 leading-relaxed">
                   我来帮你定制专属训练计划。先告诉我几个问题：
                 </p>
               </div>
 
               {/* 步骤进度条 */}
               <div className="mb-5">
-                <div className="flex justify-between text-xs text-slate-400 font-light mb-1.5">
+                <div className="flex justify-between text-xs text-slate-500 font-light mb-1.5">
                   <span>步骤 {currentStep + 1} / {STEPS.length}</span>
                   <span>{Math.round(progress)}%</span>
                 </div>
@@ -438,7 +395,7 @@ const AIPlan = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="border-slate-200 text-slate-600 hover:bg-slate-50"
+                      className="border-slate-200 text-slate-700 hover:bg-slate-50"
                       onClick={() => setCurrentStep(currentStep - 1)}
                     >
                       {Icons.arrowLeft}
@@ -466,16 +423,11 @@ const AIPlan = () => {
                   )}
                 </div>
 
-                <div className="flex items-center justify-center gap-1.5 text-xs text-slate-400 font-light">
+                <div className="flex items-center justify-center gap-1.5 text-xs text-slate-500 font-light">
                   {Icons.check}
                   基于 {form.goal} · {form.level} · 每周{form.frequency}次
                 </div>
 
-                {saveSuccess && (
-                  <div className="text-xs text-emerald-600 font-light text-center flex items-center justify-center gap-1.5">
-                    {Icons.save} 已保存
-                  </div>
-                )}
                 {error && (
                   <div className="text-xs text-red-500 font-light text-center">{error}</div>
                 )}
@@ -486,21 +438,16 @@ const AIPlan = () => {
 
         {/* ===== 右栏：计划展示 ===== */}
         <div className="w-[540px] h-[647px] flex-shrink-0">
-          <Card className="border-0 shadow-sm bg-white h-full">
+          <Card className="h-full">
             <CardContent className="p-6 flex flex-col h-full">
               {loading ? (
                 <PlanSkeleton />
               ) : plan ? (
                 <>
                   <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-200/50">
-                    <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">你的计划</span>
+                    <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">你的计划</span>
                     <div className="flex items-center gap-2">
-                      {isSaved && (
-                        <span className="text-xs bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-full flex items-center gap-1 font-light">
-                          {Icons.savedBadge} 已保存
-                        </span>
-                      )}
-                      <span className="text-xs bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded-full font-light">
+                      <span className="text-xs bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full font-light">
                         {form.goal} · {form.level}
                       </span>
                     </div>
@@ -512,15 +459,8 @@ const AIPlan = () => {
 
                   <div className="flex items-center gap-3 mt-4 pt-4 border-t border-slate-200/50">
                     <Button
-                      className={`${isSaved ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-slate-800 hover:bg-slate-700 text-white'}`}
-                      onClick={handleSave}
-                      disabled={saveLoading || isSaved}
-                    >
-                      {saveLoading ? '保存中...' : isSaved ? '已保存' : '保存计划'}
-                    </Button>
-                    <Button
                       variant="outline"
-                      className="border-slate-200 text-slate-600 hover:bg-slate-50"
+                      className="border-slate-200 text-slate-700 hover:bg-slate-50"
                       onClick={handleGenerate}
                       disabled={loading}
                     >
@@ -531,11 +471,11 @@ const AIPlan = () => {
                 </>
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center text-center">
-                  <div className="w-16 h-16 mb-4 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                  <div className="w-16 h-16 mb-4 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
                     {Icons.ai}
                   </div>
-                  <p className="text-sm text-slate-600 font-medium">配置左侧参数后生成计划</p>
-                  <p className="text-xs text-slate-400 font-light mt-1 max-w-[200px]">
+                  <p className="text-sm text-slate-700 font-medium">配置左侧参数后生成计划</p>
+                  <p className="text-xs text-slate-500 font-light mt-1 max-w-[200px]">
                     AI 将根据你的目标、场地和经验，定制专属训练方案
                   </p>
                 </div>

@@ -91,7 +91,7 @@ const Header = () => {
               className={`text-sm transition-colors ${
                 isActive(item.path)
                   ? 'text-slate-800 font-medium'
-                  : 'text-slate-400 hover:text-slate-600'
+                  : 'text-slate-500 hover:text-slate-700'
               }`}
             >
               {item.label}
@@ -100,7 +100,7 @@ const Header = () => {
           {showSwitchButton && (
             <button
               onClick={handleSwitchView}
-              className="text-sm text-blue-500 hover:text-blue-700 transition-colors"
+              className="text-sm text-blue-500 hover:text-blue-700 transition-colors cursor-pointer"
             >
               {switchButtonLabel}
             </button>
@@ -122,7 +122,7 @@ const Header = () => {
             variant="ghost"
             size="sm"
             onClick={handleLogout}
-            className="text-slate-400 hover:text-slate-600"
+            className="text-slate-500 hover:text-slate-700"
           >
             退出
           </Button>

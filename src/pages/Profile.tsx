@@ -179,7 +179,7 @@ const fetchData = async () => {
         <Button
           onClick={() => navigate('/profile/edit')}
           variant="outline"
-          className="border-slate-200 text-slate-600 hover:bg-slate-50"
+          className="border-slate-200 text-slate-700 hover:bg-slate-50"
         >
           {Icons.edit}
           编辑资料
@@ -187,11 +187,11 @@ const fetchData = async () => {
       </div>
 
       {/* ===== 用户信息卡片 ===== */}
-      <Card className="border-0 shadow-sm bg-white">
+      <Card>
         <CardContent className="p-6">
           <div className="flex items-center gap-6">
             <div className="relative flex-shrink-0">
-              <div className="w-20 h-20 rounded-full bg-slate-200 flex items-center justify-center text-slate-400 overflow-hidden">
+              <div className="w-20 h-20 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 overflow-hidden">
                 {profile?.avatar ? (
                   <img src={profile.avatar} alt="" className="w-full h-full object-cover" />
                 ) : (
@@ -201,7 +201,7 @@ const fetchData = async () => {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={avatarUploading}
-                className="absolute -bottom-0.5 -right-0.5 p-1.5 rounded-full bg-slate-700 hover:bg-slate-600 text-white transition-colors disabled:opacity-50"
+                className="absolute -bottom-0.5 -right-0.5 p-1.5 rounded-full bg-slate-700 hover:bg-slate-600 text-white transition-all duration-150 hover:scale-110 disabled:opacity-50"
               >
                 {avatarUploading ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -214,15 +214,15 @@ const fetchData = async () => {
 
             <div>
               <h2 className="text-lg font-medium text-slate-700">{displayName}</h2>
-              <p className="text-sm text-slate-400 font-light">{displayEmail}</p>
+              <p className="text-sm text-slate-500 font-light">{displayEmail}</p>
               {profile?.bio && <p className="text-sm text-slate-500 font-light mt-1">{profile.bio}</p>}
               <div className="flex items-center gap-4 mt-1.5 flex-wrap">
                 {profile?.gender && profile.gender !== '保密' && (
-                  <span className="text-xs text-slate-400 font-light">{profile.gender}</span>
+                  <span className="text-xs text-slate-500 font-light">{profile.gender}</span>
                 )}
-                <span className="text-xs text-slate-400 font-light">身高 {profile?.height || 0} cm</span>
-                <span className="text-xs text-slate-400 font-light">体重 {profile?.weight || 0} kg</span>
-                <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-light">
+                <span className="text-xs text-slate-500 font-light">身高 {profile?.height || 0} cm</span>
+                <span className="text-xs text-slate-500 font-light">体重 {profile?.weight || 0} kg</span>
+                <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-light">
                   {profile?.goal || '未设置'}
                 </span>
               </div>
@@ -233,42 +233,42 @@ const fetchData = async () => {
 
       {/* ===== 训练总览 ===== */}
       <div className="grid grid-cols-3 gap-3">
-        <Card className="border-0 shadow-sm bg-white">
-          <CardContent className="p-4 text-center">
-            <div className="text-slate-400 flex justify-center mb-1">{Icons.calendar}</div>
+        <Card>
+          <CardContent className="p-6 text-center">
+            <div className="text-slate-500 flex justify-center mb-1">{Icons.calendar}</div>
             <p className="stat-label">总训练次数</p>
             <p className="stat-number mt-0.5">{profile?.totalWorkouts || 0}</p>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-sm bg-white">
-          <CardContent className="p-4 text-center">
-            <div className="text-slate-400 flex justify-center mb-1">{Icons.clock}</div>
+        <Card>
+          <CardContent className="p-6 text-center">
+            <div className="text-slate-500 flex justify-center mb-1">{Icons.clock}</div>
             <p className="stat-label">总时长</p>
-            <p className="stat-number mt-0.5">{profile?.totalDuration || 0} <span className="text-sm font-light text-slate-300">分钟</span></p>
+            <p className="stat-number mt-0.5">{profile?.totalDuration || 0} <span className="text-sm font-light text-slate-500">分钟</span></p>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-sm bg-white">
-          <CardContent className="p-4 text-center">
-            <div className="text-slate-400 flex justify-center mb-1">{Icons.fire}</div>
+        <Card>
+          <CardContent className="p-6 text-center">
+            <div className="text-slate-500 flex justify-center mb-1">{Icons.fire}</div>
             <p className="stat-label">总消耗</p>
-            <p className="stat-number mt-0.5">{profile?.totalCalories || 0} <span className="text-sm font-light text-slate-300">kcal</span></p>
+            <p className="stat-number mt-0.5">{profile?.totalCalories || 0} <span className="text-sm font-light text-slate-500">kcal</span></p>
           </CardContent>
         </Card>
       </div>
 
       {/* ===== 我的打卡 ===== */}
-      <Card className="border-0 shadow-sm bg-white">
+      <Card>
         <CardContent className="p-5">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 text-slate-400">
+            <div className="flex items-center gap-2 text-slate-500">
               {Icons.calendar}
               <span className="text-xs font-medium uppercase tracking-wider">我的打卡</span>
             </div>
-            <span className="text-xs text-slate-300 font-light">共 {checkins.length} 条</span>
+            <span className="text-xs text-slate-500 font-light">共 {checkins.length} 条</span>
           </div>
           <div className="space-y-2">
             {checkins.length === 0 ? (
-              <p className="text-sm text-slate-400 font-light text-center py-6">暂无打卡记录</p>
+              <p className="text-sm text-slate-500 font-light text-center py-6">暂无打卡记录</p>
             ) : (
               checkins.map((item, idx) => (
                 <motion.div
@@ -276,10 +276,10 @@ const fetchData = async () => {
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2, delay: idx * 0.05 }}
-                  className="flex items-center justify-between py-2.5 px-3 -mx-3 rounded-lg hover:bg-slate-50 transition-colors"
+                  className="flex items-center justify-between py-2.5 px-3 -mx-3 rounded-lg hover:bg-slate-50/80 transition-colors"
                 >
-                  <p className="text-sm text-slate-600 font-light truncate max-w-[70%]">{item.content}</p>
-                  <span className="text-xs text-slate-300 font-light flex-shrink-0 ml-4">{item.time}</span>
+                  <p className="text-sm text-slate-700 font-light truncate max-w-[70%]">{item.content}</p>
+                  <span className="text-xs text-slate-500 font-light flex-shrink-0 ml-4">{item.time}</span>
                 </motion.div>
               ))
             )}

@@ -243,18 +243,18 @@ const Community = () => {
                   {newImages.map((img, idx) => (
                     <div key={idx} className="relative w-16 h-16 rounded-lg overflow-hidden bg-slate-100">
                       <img src={img} alt="" className="w-full h-full object-cover" />
-                      <button onClick={() => removeImage(idx)} className="absolute top-0 right-0 p-0.5 bg-slate-800/70 rounded-bl-lg text-white">{Icons.close}</button>
+                      <button onClick={() => removeImage(idx)} className="absolute top-0 right-0 p-0.5 bg-slate-800/70 rounded-bl-lg text-white transition-all duration-150 hover:scale-110">{Icons.close}</button>
                     </div>
                   ))}
                   {newImages.length < 3 && (
-                    <button onClick={() => fileInputRef.current?.click()} className="w-16 h-16 rounded-lg border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-400 hover:border-slate-400 transition-colors">
+                    <button onClick={() => fileInputRef.current?.click()} className="w-16 h-16 rounded-lg border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-500 hover:border-slate-400 transition-colors">
                       {Icons.image}
                     </button>
                   )}
                   <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} />
                 </div>
                 <textarea
-                  className="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm text-slate-700 focus:outline-none focus:border-slate-400 transition-colors min-h-[80px] resize-none font-light placeholder:text-slate-400"
+                  className="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm text-slate-700 focus:outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200 transition-colors min-h-[80px] resize-none font-light placeholder:text-slate-500"
                   placeholder="分享你的训练成果..."
                   value={newContent}
                   onChange={(e) => setNewContent(e.target.value)}
@@ -272,9 +272,9 @@ const Community = () => {
       {/* ===== 双列瀑布流 ===== */}
       {safeFeed.length === 0 ? (
         <div className="text-center py-16">
-          <div className="p-4 rounded-full bg-slate-100 inline-block text-slate-400">{Icons.user}</div>
-          <p className="text-sm text-slate-400 font-light mt-4">还没有打卡动态</p>
-          <p className="text-xs text-slate-300 font-light mt-1">成为第一个打卡的人</p>
+          <div className="p-4 rounded-full bg-slate-100 inline-block text-slate-500">{Icons.user}</div>
+          <p className="text-sm text-slate-500 font-light mt-4">还没有打卡动态</p>
+          <p className="text-xs text-slate-500 font-light mt-1">成为第一个打卡的人</p>
         </div>
       ) : (
         <div className="columns-1 sm:columns-2 gap-4 space-y-4">
@@ -287,24 +287,24 @@ const Community = () => {
               className="break-inside-avoid cursor-pointer"
               onClick={() => openDetail(item)}
             >
-              <Card className="border-0 shadow-sm bg-white rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-200">
+              <Card className="bg-white rounded-xl overflow-hidden hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
                 <CardContent className="p-0">
                   {item.images && item.images.length > 0 ? (
                     <div className="aspect-[4/3] overflow-hidden bg-slate-100">
                       <img src={item.images[0]} alt="" className="w-full h-full object-cover" />
                     </div>
                   ) : (
-                    <div className="aspect-[4/3] bg-gradient-to-br from-slate-100 to-slate-200/50 flex items-center justify-center text-4xl text-slate-300">
+                    <div className="aspect-[4/3] bg-gradient-to-br from-slate-100 to-slate-200/50 flex items-center justify-center text-4xl text-slate-500">
                       {Icons.user}
                     </div>
                   )}
-                  <div className="p-4">
+                  <div className="p-6">
                     <div className="flex items-center gap-2.5 mb-2">
                       <div className="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 text-xs font-light">
                         {item.username?.[0]?.toUpperCase() || 'U'}
                       </div>
                       <span className="text-xs font-medium text-slate-700">{item.username}</span>
-                      <span className="text-[10px] text-slate-300 ml-auto">{formatTime(item.time)}</span>
+                      <span className="text-[10px] text-slate-500 ml-auto">{formatTime(item.time)}</span>
                     </div>
                     {item.content && (
                       <p className="text-xs text-slate-500 font-light leading-relaxed line-clamp-2 mb-2.5">
@@ -313,14 +313,14 @@ const Community = () => {
                     )}
                     <div className="flex items-center gap-4 pt-2.5 border-t border-slate-200/50">
                       <button
-                        className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors"
+                        className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 transition-all duration-150 hover:scale-110"
                         onClick={(e) => { e.stopPropagation(); handleLike(item.id); }}
                       >
                         {item.isLiked ? Icons.heartFilled : Icons.heart}
                       </button>
                       {shouldShowAdminActions() && (
                         <button
-                          className="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-600 transition-colors ml-auto"
+                          className="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-600 transition-all duration-150 hover:scale-110 ml-auto"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDeleteCheckin(item.id);
@@ -345,7 +345,7 @@ const Community = () => {
           <div className="bg-white rounded-xl shadow-xl overflow-hidden">
             {selectedCheckin && (
               <>
-                <button onClick={() => setDetailOpen(false)} className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors">
+                <button onClick={() => setDetailOpen(false)} className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-black/30 text-white hover:bg-black/50 transition-all duration-150 hover:scale-110">
                   {Icons.x}
                 </button>
                 {selectedCheckin.images && selectedCheckin.images.length > 0 ? (
@@ -353,7 +353,7 @@ const Community = () => {
                     <img src={selectedCheckin.images[0]} alt="" className="w-full h-full object-cover" />
                   </div>
                 ) : (
-                  <div className="aspect-[4/3] bg-gradient-to-br from-slate-100 to-slate-200/50 flex items-center justify-center text-5xl text-slate-300">
+                  <div className="aspect-[4/3] bg-gradient-to-br from-slate-100 to-slate-200/50 flex items-center justify-center text-5xl text-slate-500">
                     {Icons.user}
                   </div>
                 )}
@@ -364,20 +364,20 @@ const Community = () => {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-slate-700">{selectedCheckin.username}</p>
-                      <p className="text-xs text-slate-400 font-light">{formatTime(selectedCheckin.time)}</p>
+                      <p className="text-xs text-slate-500 font-light">{formatTime(selectedCheckin.time)}</p>
                     </div>
                   </div>
-                  <p className="text-sm text-slate-600 font-light leading-relaxed mb-4">{selectedCheckin.content}</p>
+                  <p className="text-sm text-slate-700 font-light leading-relaxed mb-4">{selectedCheckin.content}</p>
                   <div className="flex items-center gap-4 mb-4">
                     <button
-                      className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
+                      className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 transition-all duration-150 hover:scale-110"
                       onClick={() => handleLike(selectedCheckin.id)}
                     >
                       {selectedCheckin.isLiked ? Icons.heartFilled : Icons.heart}
                     </button>
                     {shouldShowAdminActions() && (
                       <button
-                        className="flex items-center gap-1.5 text-sm text-red-400 hover:text-red-600 transition-colors"
+                        className="flex items-center gap-1.5 text-sm text-red-400 hover:text-red-600 transition-all duration-150 hover:scale-110"
                         onClick={() => handleDeleteCheckin(selectedCheckin.id)}
                       >
                         {Icons.delete}
